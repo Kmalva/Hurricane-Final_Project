@@ -153,29 +153,30 @@ svg#main-chart { display: block; width: 100%; overflow: visible; }
 }
 
 /* PROJECT WRITEUP */
-
 #project-writeup{
-  padding: 120px 8vw;
-  background: #f9fafb;
+  padding: 18vh 8vw;
   border-top: 1px solid var(--border);
+  background: #fff;
 }
 
 .writeup-container{
-  max-width: 850px;
-  margin: 0 auto;
+  max-width: 760px;
 }
 
 #project-writeup h2{
-  font-size: clamp(1.8rem, 3vw, 2.8rem);
-  line-height: 1.15;
+  font-size: clamp(2rem, 4vw, 3.5rem);
+  line-height: 1.1;
+  font-weight: 700;
+  letter-spacing: -0.03em;
   margin-bottom: 2rem;
   color: var(--text);
+  max-width: 14ch;
 }
 
 #project-writeup p{
-  font-size: 14px;
+  font-size: 13px;
   line-height: 1.9;
-  color: #4b5563;
-  margin-bottom: 1.5rem;
-  max-width: 75ch;
+  color: var(--muted);
+  max-width: 62ch;
+  margin-bottom: 1.8rem;
 }
