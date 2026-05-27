@@ -151,3 +151,31 @@ svg#main-chart { display: block; width: 100%; overflow: visible; }
   box-shadow: 0 2px 8px rgba(0,0,0,0.08);
   min-width: 160px;
 }
+
+/* PROJECT WRITEUP */
+
+#project-writeup{
+  padding: 120px 8vw;
+  background: #f9fafb;
+  border-top: 1px solid var(--border);
+}
+
+.writeup-container{
+  max-width: 850px;
+  margin: 0 auto;
+}
+
+#project-writeup h2{
+  font-size: clamp(1.8rem, 3vw, 2.8rem);
+  line-height: 1.15;
+  margin-bottom: 2rem;
+  color: var(--text);
+}
+
+#project-writeup p{
+  font-size: 14px;
+  line-height: 1.9;
+  color: #4b5563;
+  margin-bottom: 1.5rem;
+  max-width: 75ch;
+}
