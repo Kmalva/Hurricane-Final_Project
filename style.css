@@ -154,29 +154,31 @@ svg#main-chart { display: block; width: 100%; overflow: visible; }
 
 /* PROJECT WRITEUP */
 #project-writeup{
-  padding: 18vh 8vw;
+  padding: 22vh 0 20vh 0;
   border-top: 1px solid var(--border);
   background: #fff;
 }
 
 .writeup-container{
-  max-width: 760px;
+  width: 100%;
+  max-width: 720px;
+  margin-left: 8vw;
 }
 
 #project-writeup h2{
-  font-size: clamp(2rem, 4vw, 3.5rem);
+  font-size: clamp(2.4rem, 6vw, 5rem);
   line-height: 1.1;
+  letter-spacing: -0.04em;
   font-weight: 700;
-  letter-spacing: -0.03em;
-  margin-bottom: 2rem;
   color: var(--text);
-  max-width: 14ch;
+  margin-bottom: 2rem;
+  max-width: 10ch;
 }
 
 #project-writeup p{
   font-size: 13px;
-  line-height: 1.9;
+  line-height: 1.85;
   color: var(--muted);
-  max-width: 62ch;
-  margin-bottom: 1.8rem;
+  max-width: 52ch;
+  margin-bottom: 1.7rem;
 }
