@@ -1,0 +1,14 @@
+name: sst-viz
+channels:
+  - conda-forge
+dependencies:
+  - python=3.11
+  - pandas
+  - numpy
+  - matplotlib
+  - xarray
+  - netcdf4
+  - h5netcdf
+  - scipy
+  - jupyterlab
+  - ipykernel

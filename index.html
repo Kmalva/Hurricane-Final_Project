@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Atlantic Ocean Warming</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/scrollama/3.2.0/scrollama.min.js"></script>
+</head>
+<body>
+
+<section id="hero">
+  <h1>Atlantic Ocean temperatures are rising.</h1>
+  <p>Sea surface temperatures have climbed roughly 0.9 °C since 1900. Scroll to see what the next 75 years might look like.</p>
+  <div class="scroll-hint">
+    <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+      <path d="M6 2v8M3 7l3 3 3-3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+    Scroll
+  </div>
+</section>
+
+<section id="scrolly">
+
+  <div id="sticky-graphic">
+    <div id="chart-wrap">
+      <div id="chart-title">Atlantic Sea Surface Temperature, 1900–2100</div>
+      <div id="chart-subtitle">Annual average °C · NOAA ERSST v5 + CMIP6 GFDL-ESM4</div>
+      <svg id="main-chart"></svg>
+      <div id="legend">
+        <div class="legend-item">
+          <div class="swatch" style="background:var(--hist)"></div>
+          <span>Observed</span>
+        </div>
+        <div class="legend-item">
+          <div class="swatch" style="background:var(--ssp126)"></div>
+          <span style="color:var(--ssp126)">SSP1-2.6 · Low emissions</span>
+        </div>
+        <div class="legend-item">
+          <div class="swatch" style="background:var(--ssp245)"></div>
+          <span style="color:var(--ssp245)">SSP2-4.5 · Moderate</span>
+        </div>
+        <div class="legend-item">
+          <div class="swatch" style="background:var(--ssp585)"></div>
+          <span style="color:var(--ssp585)">SSP5-8.5 · High emissions</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="steps">
+
+    <div class="step" data-step="0">
+      <div class="step-inner">
+        <div class="step-label">1900 – 2026</div>
+        <h3>Over a century of warming</h3>
+        <p>Atlantic sea surface temperatures have risen about 0.9 °C since 1900, with the fastest increases happening in recent decades.</p>
+      </div>
+    </div>
+
+    <div class="step" data-step="1">
+      <div class="step-inner">
+        <div class="step-label" style="color:var(--ssp126)">SSP1-2.6</div>
+        <h3 style="color:var(--ssp126)">Low emissions</h3>
+        <p>If the world cuts emissions aggressively, Atlantic SSTs stabilise close to today's levels — roughly +0.4 °C more by 2100.</p>
+      </div>
+    </div>
+
+    <div class="step" data-step="2">
+      <div class="step-inner">
+        <div class="step-label" style="color:var(--ssp245)">SSP2-4.5</div>
+        <h3 style="color:var(--ssp245)">Moderate emissions</h3>
+        <p>A middle-of-the-road path. Temperatures keep rising but more slowly, reaching about +1.1 °C above today by 2100.</p>
+      </div>
+    </div>
+
+    <div class="step" data-step="3">
+      <div class="step-inner">
+        <div class="step-label" style="color:var(--ssp585)">SSP5-8.5</div>
+        <h3 style="color:var(--ssp585)">High emissions</h3>
+        <p>If fossil fuel use accelerates, the Atlantic could be 2.5 °C warmer than today by 2100 — well above anything in the historical record.</p>
+      </div>
+    </div>
+
+    <div class="step" data-step="4">
+      <div class="step-inner">
+        <div class="step-label">All scenarios</div>
+        <h3>The gap is a choice</h3>
+        <p>Nearly 2 °C separates the best and worst cases by 2100. That difference is determined by the emissions decisions made over the next few decades.</p>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<div id="tooltip"></div>
+
+<script src="main.js"></script>
+
+</body>
+</html>
