@@ -14,17 +14,27 @@
     return rows.map(d => ({ year: +d.year, sst: +(d.sst ?? d.avg_sst ?? d.projected_sst ?? d.observed_sst) }));
   }
 
+  // Shift a projection dataset so its first value exactly matches the last
+  // historical value — removes the visual step at the model run boundary.
+  function stitchToHistory(hist, proj) {
+    const delta = hist[hist.length - 1].sst - proj[0].sst;
+    return proj.map(d => ({ year: d.year, sst: d.sst + delta }));
+  }
+
   async function loadData() {
     [DATA_HIST, DATA_126, DATA_245, DATA_585] = await Promise.all([
-      d3.csv('data/atlantic_sst_annual.csv'),
+      d3.csv('data/cmip6_historical.csv'),
       d3.csv('data/ssp126.csv'),
       d3.csv('data/ssp245.csv'),
       d3.csv('data/ssp585.csv'),
     ]);
     DATA_HIST = parseRows(DATA_HIST);
-    DATA_126  = parseRows(DATA_126);
-    DATA_245  = parseRows(DATA_245);
-    DATA_585  = parseRows(DATA_585);
+    DATA_126  = stitchToHistory(DATA_HIST, parseRows(DATA_126));
+    DATA_245  = stitchToHistory(DATA_HIST, parseRows(DATA_245));
+    DATA_585  = stitchToHistory(DATA_HIST, parseRows(DATA_585));
+    // Extend historical one year so the line visually meets the SSP start point
+    const lastH = DATA_HIST[DATA_HIST.length - 1];
+    DATA_HIST = [...DATA_HIST, { year: lastH.year + 1, sst: lastH.sst }];
   }
 
   // ── CHART ──
@@ -36,8 +46,9 @@
   let W, H, svg, xS, yS, lineGen, histPath, p126, p245, p585;
   let currentStep = -1;
 
-  const LAST_OBS_YEAR = 2025;   // observed data ends here
-  const FIRST_PROJ    = 2026;   // projections begin
+  const LAST_OBS_YEAR = 2014;   // CMIP6 historical run ends here
+  const FIRST_PROJ    = 2015;   // SSP126/245 projections begin
+  const PROJ_START = { '126': 2015, '245': 2015, '585': 2015 };
 
   function build() {
     if (!DATA_HIST) return;
@@ -95,13 +106,13 @@
     defs.append('clipPath').attr('id', 'ch').append('rect').attr('y', 0).attr('width', 0).attr('height', H);
     ['126', '245', '585'].forEach(s => {
       defs.append('clipPath').attr('id', `c${s}`)
-        .append('rect').attr('x', xS(2015)).attr('y', 0).attr('width', 0).attr('height', H);
+        .append('rect').attr('x', xS(PROJ_START[s])).attr('y', 0).attr('width', 0).attr('height', H);
     });
 
     // Recent-warming highlight band (1990–2025) — shown on step 0
     svg.append('rect').attr('class', 'recent-band')
       .attr('x', xS(1990)).attr('y', 0)
-      .attr('width', xS(LAST_OBS_YEAR) - xS(1990)).attr('height', H)
+      .attr('width', xS(2014) - xS(1990)).attr('height', H)
       .attr('fill', 'url(#recentGrad)').attr('opacity', 0);
     const rg = defs.append('linearGradient').attr('id', 'recentGrad').attr('x1', '0').attr('x2', '1');
     rg.append('stop').attr('offset', '0%').attr('stop-color', '#ef4444').attr('stop-opacity', 0);
@@ -126,6 +137,47 @@
     // Historical line (on top)
     histPath = svg.append('path').datum(DATA_HIST).attr('fill', 'none').attr('stroke', C.hist).attr('stroke-width', 2.4).attr('clip-path', 'url(#ch)').attr('d', lineGen);
 
+    // Hurricane annotations
+    // above:true → label above the line; stemLen controls tick length
+    const STORMS = [
+      { year: 1935, name: 'Labor Day', cat: 5, above: true,  stemLen: 28 },
+      { year: 1969, name: 'Camille',   cat: 5, above: true, stemLen: 28 },
+      { year: 1992, name: 'Andrew',    cat: 5, above: true,  stemLen: 28 },
+      { year: 2005, name: 'Katrina',   cat: 5, above: true, stemLen: 36 },
+      { year: 2012, name: 'Sandy',     cat: 3, above: false,  stemLen: 30 },
+    ];
+    const stormG = svg.append('g').attr('class', 'storm-annots');
+    STORMS.forEach(s => {
+      const row = DATA_HIST.find(d => d.year === s.year);
+      if (!row) return;
+      const cx = xS(s.year);
+      const cy = yS(row.sst);
+      const dir = s.above ? -1 : 1;
+      // Stem
+      stormG.append('line')
+        .attr('x1', cx).attr('y1', cy + dir * 5)
+        .attr('x2', cx).attr('y2', cy + dir * s.stemLen)
+        .attr('stroke', '#b45309').attr('stroke-width', 1).attr('stroke-dasharray', '2,2');
+      // Dot on the line
+      stormG.append('circle')
+        .attr('cx', cx).attr('cy', cy).attr('r', 4.5)
+        .attr('fill', '#f59e0b').attr('stroke', 'white').attr('stroke-width', 1.5);
+      // Label
+      stormG.append('text')
+        .attr('x', cx).attr('y', cy + dir * (s.stemLen + 10))
+        .attr('text-anchor', 'middle').attr('dominant-baseline', s.above ? 'auto' : 'hanging')
+        .attr('fill', '#92400e').attr('font-family', 'Inter, Arial')
+        .attr('font-size', '9.5').attr('font-weight', 700)
+        .text(s.name);
+      stormG.append('text')
+        .attr('x', cx).attr('y', cy + dir * (s.stemLen + 10))
+        .attr('dy', s.above ? '-10' : '12')
+        .attr('text-anchor', 'middle').attr('dominant-baseline', s.above ? 'auto' : 'hanging')
+        .attr('fill', '#a16207').attr('font-family', 'Inter, Arial')
+        .attr('font-size', '8.5')
+        .text(`Cat ${s.cat} · ${s.year}`);
+    });
+
     // "Observed ends / Projection begins" divider + annotation
     svg.append('line').attr('class', 'now-line')
       .attr('x1', xS(FIRST_PROJ)).attr('x2', xS(FIRST_PROJ)).attr('y1', 0).attr('y2', H)
@@ -134,10 +186,10 @@
     const annot = svg.append('g').attr('class', 'obs-annot').attr('opacity', 0);
     annot.append('text').attr('x', xS(FIRST_PROJ) - 6).attr('y', 13).attr('text-anchor', 'end')
       .attr('fill', '#52707f').attr('font-family', 'Inter, Arial').attr('font-size', '10').attr('font-weight', 600)
-      .text('← Observed ends 2025');
+      .text('← CMIP6 historical ends 2014');
     annot.append('text').attr('x', xS(FIRST_PROJ) + 6).attr('y', 13).attr('text-anchor', 'start')
       .attr('fill', '#52707f').attr('font-family', 'Inter, Arial').attr('font-size', '10').attr('font-weight', 600)
-      .text('Projections begin →');
+      .text('SSP projections begin →');
 
     buildHover();
     drawStep(currentStep < 0 ? 0 : currentStep, true);
@@ -184,7 +236,7 @@
 
         let html = `<div style="font-weight:600;margin-bottom:5px;color:#0c1f2a">${yr}</div>`;
         if (!isFuture && hist) {
-          html += row(C.hist, 'Observed', hist.sst);
+          html += row(C.hist, 'CMIP6 Historical', hist.sst);
         }
         if (isFuture) {
           if (v126 && currentStep >= 1) html += row(C.ssp126, 'SSP1-2.6', v126.sst);
@@ -215,8 +267,6 @@
     if (step === currentStep && !force) return;
     currentStep = step;
 
-    const futW = xS(2100) - xS(2015);
-
     // Historical line is always fully visible (resting state never depends on an animation).
     // On first load, animate a soft "draw-on" wipe as an enhancement only.
     const chRect = d3.select('#ch rect');
@@ -240,16 +290,19 @@
     svg.select('.obs-annot').transition().duration(400).attr('opacity', showFuture ? 1 : 0);
 
     const show126 = step >= 1;
+    const w126 = xS(2100) - xS(PROJ_START['126']);
     p126.transition().duration(300).attr('opacity', show126 ? 1 : 0);
-    d3.select('#c126 rect').transition().duration(show126 ? 1200 : 0).ease(d3.easeCubicInOut).attr('width', show126 ? futW : 0);
+    d3.select('#c126 rect').transition().duration(show126 ? 1200 : 0).ease(d3.easeCubicInOut).attr('width', show126 ? w126 : 0);
 
     const show245 = step >= 2;
+    const w245 = xS(2100) - xS(PROJ_START['245']);
     p245.transition().duration(300).attr('opacity', show245 ? 1 : 0);
-    d3.select('#c245 rect').transition().duration(show245 ? 1200 : 0).ease(d3.easeCubicInOut).attr('width', show245 ? futW : 0);
+    d3.select('#c245 rect').transition().duration(show245 ? 1200 : 0).ease(d3.easeCubicInOut).attr('width', show245 ? w245 : 0);
 
     const show585 = step >= 3;
+    const w585 = xS(2100) - xS(PROJ_START['585']);
     p585.transition().duration(300).attr('opacity', show585 ? 1 : 0);
-    d3.select('#c585 rect').transition().duration(show585 ? 1200 : 0).ease(d3.easeCubicInOut).attr('width', show585 ? futW : 0);
+    d3.select('#c585 rect').transition().duration(show585 ? 1200 : 0).ease(d3.easeCubicInOut).attr('width', show585 ? w585 : 0);
 
     document.getElementById('legend').classList.toggle('visible', step >= 1);
   }
