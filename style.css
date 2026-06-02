@@ -506,6 +506,129 @@ svg#sst-map { display: block; width: 100%; height: auto; overflow: visible; bord
   #lab-stage { min-height: 260px; }
 }
 
+/* ─────────────────────────── MAKE A HURRICANE (DRAG MAP) ───────────── */
+.game-section {
+  background: linear-gradient(180deg, var(--bg-soft) 0%, var(--bg) 100%);
+  padding: 12vh 5vw;
+}
+.game-section .section-head { max-width: 720px; }
+.game-dek {
+  font-family: var(--serif); font-size: 1.15rem; color: var(--ocean-deep);
+  margin: -0.5rem 0 0.75rem; font-style: italic;
+}
+.game-card { max-width: 1200px; margin: 0 auto; padding: 1.5rem 1.5rem 1.3rem; }
+
+.game-layout {
+  display: grid;
+  grid-template-columns: minmax(220px, 240px) minmax(320px, 1fr) minmax(260px, 300px);
+  gap: 1.35rem;
+  align-items: start;
+}
+
+.game-sidebar { display: flex; flex-direction: column; gap: 0.75rem; }
+.game-instructions { font-size: 0.88rem; color: var(--ink-soft); line-height: 1.5; margin: 0; }
+.game-layer-toggles { display: flex; flex-direction: column; gap: 0.4rem; }
+.game-layer-toggles .season-btn { width: 100%; text-align: left; font-size: 0.8rem; padding: 0.45rem 0.65rem; }
+.game-legend { font-size: 11px; color: var(--muted); line-height: 1.45; margin: 0; min-height: 2.5em; }
+.game-challenges-wrap { margin-top: 0.5rem; padding-top: 0.75rem; border-top: 1px solid var(--line); }
+.game-challenges { display: flex; flex-direction: column; gap: 0.4rem; }
+.game-challenge-btn {
+  font-family: var(--sans); font-size: 0.78rem; text-align: left;
+  padding: 0.45rem 0.65rem; border-radius: 8px;
+  border: 1px solid var(--line); background: var(--bg-soft);
+  color: var(--ink-soft); cursor: pointer;
+  transition: background 0.18s, border-color 0.18s;
+}
+.game-challenge-btn:hover { border-color: var(--ocean); color: var(--ocean-deep); background: #fff; }
+.game-challenge-btn.active {
+  background: rgba(14, 165, 233, 0.12); border-color: var(--ocean);
+  color: var(--ocean-darker); font-weight: 600;
+}
+.game-keyboard-hint { font-size: 10.5px; color: var(--muted); margin: 0.5rem 0 0; }
+
+.game-map-col { display: flex; flex-direction: column; gap: 0.5rem; min-width: 0; }
+.game-map-wrap {
+  position: relative;
+  background: #02131c;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 12px 36px rgba(12,31,42,0.14);
+  touch-action: none;
+}
+#game-map { display: block; width: 100%; height: auto; min-height: 300px; }
+.game-map-wrap:focus { outline: 2px solid var(--ocean); outline-offset: 2px; }
+.game-drag-hint { margin: 0; text-align: right; }
+.game-hint-icon { color: #ef4444; font-weight: 700; }
+
+.game-popup {
+  position: absolute; z-index: 5;
+  max-width: 260px; padding: 0.85rem 1rem 0.9rem;
+  background: #fff; border: 1px solid var(--line);
+  border-radius: 10px; box-shadow: 0 10px 28px rgba(12,31,42,0.18);
+  opacity: 1; transform: translateY(0);
+  transition: opacity 0.22s ease, transform 0.22s ease;
+}
+.game-popup[hidden] { display: none !important; }
+.game-popup-close {
+  position: absolute; top: 0.35rem; right: 0.45rem;
+  border: none; background: transparent; font-size: 1.25rem;
+  line-height: 1; cursor: pointer; color: var(--muted); padding: 0.2rem;
+}
+.game-popup-title { font-size: 0.95rem; margin: 0 1.2rem 0.35rem 0; color: var(--ink); font-family: var(--sans); font-weight: 700; }
+.game-popup-body { font-size: 0.82rem; color: var(--ink-soft); margin: 0; line-height: 1.45; }
+
+.game-zone-ring { transition: opacity 0.25s ease, stroke 0.25s ease; }
+.game-zone-ring--near { stroke: #7fd2f4; stroke-width: 2.5; }
+
+.game-panel {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 1.15rem 1.2rem;
+  display: flex; flex-direction: column; gap: 0.85rem;
+  box-shadow: 0 4px 18px rgba(12,31,42,0.06);
+}
+.game-location-type { font-weight: 600; color: var(--ink); margin: 0; font-size: 0.95rem; }
+.game-storm-response { font-size: 0.9rem; color: var(--ocean-deep); margin: 0; font-weight: 500; }
+.game-score-block { }
+.game-score-label { font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); font-weight: 600; margin-bottom: 0.3rem; }
+.game-score-row { display: flex; align-items: baseline; gap: 0.5rem; flex-wrap: wrap; }
+.game-score-num { font-family: var(--serif); font-size: 1.6rem; font-weight: 700; color: var(--ink); font-variant-numeric: tabular-nums; }
+.game-growth-label { font-size: 0.82rem; color: var(--ink-soft); font-weight: 500; }
+
+.game-bars { display: flex; flex-direction: column; gap: 0.4rem; }
+.game-bar-row { display: grid; grid-template-columns: 5.5rem 1fr; gap: 0.5rem; align-items: center; font-size: 10.5px; color: var(--muted); }
+.game-bar { height: 6px; background: var(--bg-soft); border-radius: 999px; overflow: hidden; }
+.game-bar-fill {
+  height: 100%; width: 0%; border-radius: 999px;
+  transition: width 0.35s ease;
+}
+.game-bar-fill--warm { background: linear-gradient(90deg, #38bdf8, #ea580c); }
+.game-bar-fill--moist { background: #2dd4bf; }
+.game-bar-fill--shear { background: #a78bfa; }
+.game-bar-fill--exp { background: #fde047; }
+.game-bar-fill--prep { background: #7fd2f4; }
+
+.game-main-risk, .game-explanation { font-size: 0.88rem; color: var(--ink-soft); line-height: 1.5; margin: 0; }
+.game-feedback { font-size: 0.85rem; margin: 0; padding: 0.55rem 0.65rem; border-radius: 8px; line-height: 1.45; }
+.game-feedback--success { background: #dcfce7; color: #166534; border: 1px solid #bbf7d0; }
+.game-feedback--hint { background: var(--bg-soft); color: var(--ink-soft); border: 1px solid var(--line); }
+.game-caution {
+  margin-top: auto;
+  font-size: 11.5px; color: var(--muted); line-height: 1.55;
+  padding: 0.75rem 0.8rem; background: var(--bg-soft);
+  border-radius: 8px; border: 1px solid var(--line);
+}
+.game-caution strong { color: var(--ink); display: block; margin-bottom: 0.25rem; }
+.game-error { padding: 2rem; text-align: center; color: var(--muted); }
+
+@media (max-width: 960px) {
+  .game-layout { grid-template-columns: 1fr; }
+  .game-map-col { order: -1; }
+  #game-map { min-height: 280px; }
+}
+
 /* ─────────────────────────── DEMO VIDEO ──────────────────────────── */
 .video-frame {
   position: relative; width: 100%; aspect-ratio: 16 / 9;
