@@ -1,0 +1,67 @@
+{
+  "generated": "2026-06-01 23:42 UTC",
+  "source": "NOAA GOES-16 (GOES-East), accessed via NOAA Open Data on AWS",
+  "products": {
+    "sst": "ABI-L2-SSTF",
+    "imagery": "ABI-L2-MCMIPC"
+  },
+  "storm": {
+    "name": "Hurricane Ian",
+    "year_label": "2022",
+    "date_utc": "2022-09-28 17:00 UTC",
+    "category_at_view": "Category 4 / 5",
+    "landfall": {
+      "name": "Cayo Costa, SW Florida",
+      "lat": 26.7,
+      "lon": -82.3
+    },
+    "blurb": "One of the costliest U.S. hurricanes on record; made landfall in southwest Florida on Sep 28, 2022."
+  },
+  "reprojection": "success",
+  "artifacts": {
+    "sst_grid": "data/goes_sst_grid.json",
+    "sst_layer": "assets/goes_sst_layer.webp",
+    "storm_visible": "assets/goes_storm_visible.webp",
+    "storm_ir": "assets/goes_storm_ir.webp",
+    "water_vapor": "assets/goes_water_vapor.webp",
+    "storm_sst_layer": "assets/goes_storm_sst.webp",
+    "storm_sst_grid": "data/goes_storm_sst.json"
+  },
+  "boxes": {
+    "broad": {
+      "lon0": -98.0,
+      "lon1": -15.0,
+      "lat0": 7.0,
+      "lat1": 33.0
+    },
+    "storm": {
+      "lon0": -92.0,
+      "lon1": -76.0,
+      "lat0": 20.0,
+      "lat1": 32.0
+    }
+  },
+  "notes": [
+    "SST shown is a clear-sky composite from a recent peak-season day; under an active storm the surface is cloud-obscured.",
+    "GOES water-vapor imagery depicts atmospheric moisture, not measured precipitation."
+  ],
+  "sst": {
+    "vmin": 25.28,
+    "vmax": 30.9,
+    "day": "2022-09-20"
+  },
+  "storm_image": {
+    "w": 811,
+    "h": 567,
+    "box": {
+      "lon0": -92.0,
+      "lon1": -76.0,
+      "lat0": 20.0,
+      "lat1": 32.0
+    }
+  },
+  "storm_sst": {
+    "vmin": 29.05,
+    "vmax": 31.0
+  }
+}

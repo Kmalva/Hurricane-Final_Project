@@ -3,30 +3,63 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Atlantic Ocean Warming</title>
+  <title>Hurricane Fuel · How a Warming Atlantic Loads the Dice</title>
+  <meta name="description" content="An explorable explanation of how warming Atlantic Ocean temperatures and atmospheric moisture can load hurricanes with more destructive potential.">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23061620'/%3E%3Cpath d='M16 7c5 0 9 4 9 9s-4 9-9 9c3-2 4-5 4-9 0-3-2-6-5-7l1-2z' fill='%230ea5e9'/%3E%3Ccircle cx='16' cy='16' r='2.4' fill='%23f4fbff'/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/scrollama/3.2.0/scrollama.min.js"></script>
 </head>
 <body>
 
-<section id="hero">
-  <h1>Atlantic Ocean temperatures are rising.</h1>
-  <p>Sea surface temperatures have climbed roughly 0.9 °C since 1900. Scroll to see what the next 75 years might look like.</p>
-  <div class="scroll-hint">
-    <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-      <path d="M6 2v8M3 7l3 3 3-3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
-    </svg>
-    Scroll
+<!-- ══════════════════════════════ HERO / HOOK ══════════════════════════════ -->
+<header id="hero">
+  <div class="hero-bg" aria-hidden="true"></div>
+  <div class="hero-inner">
+    <div class="eyebrow">Atlantic Ocean · Climate &amp; Hurricanes</div>
+    <h1>What happens when the ocean becomes a hurricane&rsquo;s fuel&nbsp;tank?</h1>
+    <p class="hero-lede">
+      Hurricanes don&rsquo;t draw their power from nowhere. They feed on warm ocean water and moist air.
+      As the Atlantic warms, the conditions that fuel destructive storms are quietly changing &mdash;
+      and that matters for every coastline in their path.
+    </p>
+    <div class="scroll-hint">
+      <svg width="13" height="13" viewBox="0 0 12 12" fill="none">
+        <path d="M6 2v8M3 7l3 3 3-3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      Scroll to begin
+    </div>
   </div>
+</header>
+
+<!-- ══════════════════════════════ INTRO: HURRICANES NEED FUEL ══════════════ -->
+<section class="prose" id="intro">
+  <div class="kicker">The recipe</div>
+  <h2>A hurricane is an engine, and warm water is its&nbsp;fuel</h2>
+  <p>
+    A hurricane is a heat engine. It lifts warm, moist air off the ocean surface; as that air rises and its
+    water vapor condenses, it releases energy that powers the storm&rsquo;s winds. The warmer the sea surface,
+    the more energy is available &mdash; which is why hurricanes form over warm tropical water and tend to
+    weaken once they move over land or cooler seas.
+  </p>
+  <p>
+    None of this means warm water alone <em>creates</em> a hurricane, or that every storm is getting stronger.
+    But warmer oceans and a moister atmosphere can create conditions that <strong>support stronger or wetter
+    storms</strong>. To see why that&rsquo;s worth paying attention to, start with the ocean itself.
+  </p>
 </section>
 
+<!-- ══════════════════════════════ VIZ 1: SST SCROLLYTELLING ════════════════ -->
+<!-- (Existing prototype — IDs preserved; enhanced in main.js) -->
 <section id="scrolly">
 
   <div id="sticky-graphic">
     <div id="chart-wrap">
-      <div id="chart-title">Atlantic Sea Surface Temperature, 1900–2100</div>
-      <div id="chart-subtitle">Annual average °C · NOAA ERSST v5 + CMIP6 GFDL-ESM4</div>
+      <div id="chart-title">Atlantic Sea Surface Temperature, 1900&ndash;2100</div>
+      <div id="chart-subtitle">Annual average &deg;C &middot; Observed (NOAA ERSST v5) and projected (CMIP6 GFDL-ESM4)</div>
       <svg id="main-chart"></svg>
       <div id="legend">
         <div class="legend-item">
@@ -35,17 +68,18 @@
         </div>
         <div class="legend-item">
           <div class="swatch" style="background:var(--ssp126)"></div>
-          <span style="color:var(--ssp126)">SSP1-2.6 · Low emissions</span>
+          <span style="color:var(--ssp126)">SSP1-2.6 &middot; Low emissions</span>
         </div>
         <div class="legend-item">
           <div class="swatch" style="background:var(--ssp245)"></div>
-          <span style="color:var(--ssp245)">SSP2-4.5 · Moderate</span>
+          <span style="color:var(--ssp245)">SSP2-4.5 &middot; Moderate</span>
         </div>
         <div class="legend-item">
           <div class="swatch" style="background:var(--ssp585)"></div>
-          <span style="color:var(--ssp585)">SSP5-8.5 · High emissions</span>
+          <span style="color:var(--ssp585)">SSP5-8.5 &middot; High emissions</span>
         </div>
       </div>
+      <div class="chart-source">Sources: NOAA ERSST v5 (observed) &amp; CMIP6 GFDL-ESM4 (projections). See methods.</div>
     </div>
   </div>
 
@@ -53,9 +87,9 @@
 
     <div class="step" data-step="0">
       <div class="step-inner">
-        <div class="step-label">1900 – 2026</div>
+        <div class="step-label">1900 &ndash; 2025</div>
         <h3>Over a century of warming</h3>
-        <p>Atlantic sea surface temperatures have risen about 0.9 °C since 1900, with the fastest increases happening in recent decades.</p>
+        <p>Atlantic sea surface temperatures have risen roughly 0.9&nbsp;&deg;C since 1900, with the fastest increases in recent decades.</p>
       </div>
     </div>
 
@@ -63,7 +97,7 @@
       <div class="step-inner">
         <div class="step-label" style="color:var(--ssp126)">SSP1-2.6</div>
         <h3 style="color:var(--ssp126)">Low emissions</h3>
-        <p>If the world cuts emissions aggressively, Atlantic SSTs stabilise close to today's levels — roughly +0.4 °C more by 2100.</p>
+        <p>If the world cuts emissions aggressively, Atlantic SSTs stabilise close to today&rsquo;s levels &mdash; roughly +0.4&nbsp;&deg;C more by 2100.</p>
       </div>
     </div>
 
@@ -71,7 +105,7 @@
       <div class="step-inner">
         <div class="step-label" style="color:var(--ssp245)">SSP2-4.5</div>
         <h3 style="color:var(--ssp245)">Moderate emissions</h3>
-        <p>A middle-of-the-road path. Temperatures keep rising but more slowly, reaching about +1.1 °C above today by 2100.</p>
+        <p>A middle-of-the-road path. Temperatures keep rising but more slowly, reaching about +1.1&nbsp;&deg;C above today by 2100.</p>
       </div>
     </div>
 
@@ -79,7 +113,7 @@
       <div class="step-inner">
         <div class="step-label" style="color:var(--ssp585)">SSP5-8.5</div>
         <h3 style="color:var(--ssp585)">High emissions</h3>
-        <p>If fossil fuel use accelerates, the Atlantic could be 2.5 °C warmer than today by 2100 — well above anything in the historical record.</p>
+        <p>If fossil fuel use accelerates, the Atlantic could be 2.5&nbsp;&deg;C warmer than today by 2100 &mdash; well above anything in the historical record.</p>
       </div>
     </div>
 
@@ -87,44 +121,212 @@
       <div class="step-inner">
         <div class="step-label">All scenarios</div>
         <h3>The gap is a choice</h3>
-        <p>Nearly 2 °C separates the best and worst cases by 2100. That difference is determined by the emissions decisions made over the next few decades.</p>
+        <p>Nearly 2&nbsp;&deg;C separates the best and worst cases by 2100. That difference is set by the emissions decisions made over the next few decades.</p>
       </div>
     </div>
 
   </div>
 </section>
 
-<div id="tooltip"></div>
-
-<section id="project-writeup">
-
-  <div class="step-inner">
-
-    <div class="step-label">
-      Final Project
-    </div>
-
-    <h3>
-      Hurricanes, climate, and rising ocean temperatures
-    </h3>
-
-    <p>
-      So far we have been brainstorming ideas for our final project. We’ve landed on the idea of telling a story about how hurricanes are connected to sea temperature and precipitation, and how climate change may intensify these factors and lead to stronger hurricanes and greater destruction in affected communities.
-    </p>
-
-    <p>
-      Our prototype website currently includes one of the visualizations we plan to use: a line chart of Atlantic Ocean temperatures with future climate projections that are revealed as the user scrolls. We are also working on developing additional visualizations that will help communicate the relationship between climate change and hurricane activity more clearly.
-    </p>
-
-    <p>
-      We expect the most challenging part of the project to be creating interactive and engaging hurricane visualizations. While we have found strong examples for visualizing individual hurricanes, we want to focus on showing long-term trends to emphasize how hurricanes correlate with environmental factors such as ocean temperature and precipitation. Our goal is to create visualizations that not only present data, but also tell a compelling story about increasing hurricane destruction and the climate conditions that may contribute to it.
-    </p>
-
+<!-- ══════════════════════════════ BEAT: AND ════════════════════════════════ -->
+<section class="beat beat-and">
+  <div class="beat-inner">
+    <div class="beat-tag">And</div>
+    <p>The Atlantic is warming &mdash; and warmer ocean water can hand a hurricane more energy to work&nbsp;with.</p>
   </div>
-
 </section>
 
-<script src="main.js"></script>
+<!-- ══════════════════════════════ VIZ 2: GOES "FUEL TANK TODAY" ════════════ -->
+<section class="viz-section" id="viz2">
+  <div class="section-head">
+    <div class="kicker">The fuel tank, seen from space</div>
+    <h2>Where the ocean is warm enough to power a&nbsp;storm</h2>
+    <p>
+      The long-term trend is one thing; the map of warmth in any given season is another. Using
+      <strong>NOAA GOES satellite</strong> observations, we can look at sea surface temperature across the
+      tropical Atlantic &mdash; the region where most major hurricanes are born. Warmer water (toward the deep
+      reds) is the fuel; the dashed band marks the <em>main development region</em> where storms most often
+      spin up.
+    </p>
+  </div>
 
+  <figure class="chart-card" id="viz2-card">
+    <figcaption class="chart-head">
+      <div class="chart-title" id="sst-map-title">Atlantic sea surface temperature &mdash; GOES satellite</div>
+      <div class="chart-sub" id="sst-map-sub">Loading satellite data&hellip;</div>
+    </figcaption>
+    <div id="sst-map-wrap">
+      <svg id="sst-map" role="img" aria-label="Map of Atlantic sea surface temperature from GOES"></svg>
+      <div id="sst-map-fallback" class="viz-fallback" hidden></div>
+    </div>
+    <div id="sst-legend" class="map-legend" aria-hidden="true"></div>
+    <div class="chart-source" id="sst-map-source">Source: NOAA GOES (ABI-L2-SSTF). See methods.</div>
+  </figure>
+</section>
+
+<!-- ══════════════════════════════ VIZ 3: INGREDIENTS EXPLORER (CENTERPIECE) ═ -->
+<section class="viz-section centerpiece" id="viz3">
+  <div class="section-head">
+    <div class="kicker">Interactive · the centerpiece</div>
+    <h2>The ingredients of a real&nbsp;storm</h2>
+    <p>
+      A destructive hurricane is rarely one ingredient &mdash; it&rsquo;s several lining up at once. Explore a
+      real Atlantic hurricane as <strong>NOAA GOES</strong> saw it: toggle between the storm itself, the warm
+      sea surface beneath it, and the atmospheric moisture feeding it. Hover the scene to read the conditions at
+      any point, and watch how the pieces stack together.
+    </p>
+  </div>
+
+  <div class="explorer" id="explorer">
+    <div class="explorer-stage" id="explorer-stage" role="img" aria-label="Interactive satellite view of a hurricane">
+      <div id="explorer-fallback" class="viz-fallback" hidden></div>
+    </div>
+
+    <aside class="explorer-panel" id="explorer-panel">
+      <div class="panel-block" id="panel-meta">
+        <div class="panel-storm" id="panel-storm">Loading storm&hellip;</div>
+        <div class="panel-storm-sub" id="panel-storm-sub"></div>
+      </div>
+
+      <div class="panel-block">
+        <div class="panel-label">Layers</div>
+        <div class="layer-toggles" id="layer-toggles" role="group" aria-label="Toggle satellite layers">
+          <!-- buttons injected by viz3-explorer.js -->
+        </div>
+      </div>
+
+      <div class="panel-block" id="panel-time-block" hidden>
+        <div class="panel-label">Time</div>
+        <input type="range" id="time-slider" min="0" max="0" value="0" step="1" aria-label="Step through time">
+        <div class="panel-time-readout" id="time-readout"></div>
+      </div>
+
+      <div class="panel-block panel-readout" id="panel-readout">
+        <div class="panel-label">What you&rsquo;re looking at</div>
+        <div class="readout-body" id="readout-body">
+          Hover the satellite scene to read local conditions.
+        </div>
+      </div>
+    </aside>
+  </div>
+
+  <div class="explorer-caption chart-source" id="explorer-source">Source: NOAA GOES. See methods.</div>
+</section>
+
+<!-- ══════════════════════════════ BEAT: BUT ════════════════════════════════ -->
+<section class="beat beat-but">
+  <div class="beat-inner">
+    <div class="beat-tag">But</div>
+    <p>Warmth and moisture are not the whole story. What a storm <em>does</em> depends on where it lands, who lives there, and how prepared they&nbsp;are.</p>
+  </div>
+</section>
+
+<!-- ══════════════════════════════ COMMUNITY IMPACT (THEREFORE) ═════════════ -->
+<section class="prose" id="community">
+  <div class="kicker">Why it reaches the shore</div>
+  <h2>Destruction is built on the coast, not just at&nbsp;sea</h2>
+  <p>
+    Two storms with identical winds can leave wildly different damage behind. A powerful hurricane that stays
+    offshore may harm no one; a weaker, slow-moving storm that stalls over a city can cause catastrophic
+    flooding. Damage depends on <strong>landfall location, population exposure, infrastructure, drainage, and
+    preparedness</strong> &mdash; human factors layered on top of the physical ones.
+  </p>
+  <div class="impact-grid">
+    <div class="impact-card">
+      <div class="impact-icon">🌊</div>
+      <h3>Warm ocean</h3>
+      <p>Provides energy. More heat available can support higher peak intensity.</p>
+    </div>
+    <div class="impact-card">
+      <div class="impact-icon">💨</div>
+      <h3>Atmospheric moisture</h3>
+      <p>A wetter atmosphere can mean heavier rainfall and inland flooding risk.</p>
+    </div>
+    <div class="impact-card">
+      <div class="impact-icon">📍</div>
+      <h3>Landfall &amp; path</h3>
+      <p>Where and how slowly a storm moves shapes which communities are hit.</p>
+    </div>
+    <div class="impact-card">
+      <div class="impact-icon">🏘️</div>
+      <h3>Community exposure</h3>
+      <p>Population, infrastructure, and preparedness decide the human toll.</p>
+    </div>
+  </div>
+  <p class="therefore-line">
+    <span class="beat-tag inline">Therefore</span>
+    Hurricane risk is best understood as a <strong>combination</strong>: warming oceans and heavier moisture,
+    storm intensity, and community vulnerability all aligning at once.
+  </p>
+</section>
+
+<!-- ══════════════════════════════ TAKEAWAY ═════════════════════════════════ -->
+<section class="prose takeaway" id="takeaway">
+  <div class="kicker light">The takeaway</div>
+  <h2>The clearest pattern isn&rsquo;t stronger storms every year &mdash; it&rsquo;s a changing&nbsp;environment</h2>
+  <p>
+    Year to year, hurricanes are noisy and unpredictable. The steadier signal is in the conditions they form
+    in. The first chart showed an Atlantic that has warmed for over a century and may keep warming. The
+    satellite views showed what that warmth and moisture look like beneath a real storm. Put together, they
+    point to one idea: <strong>the environment hurricanes form in is shifting, and that can load storms with
+    more destructive potential</strong> &mdash; making hurricane risk a long-term climate issue, not a single
+    bad season.
+  </p>
+</section>
+
+<!-- ══════════════════════════════ DEMO VIDEO SLOT ══════════════════════════ -->
+<section class="prose" id="video">
+  <div class="kicker">Watch</div>
+  <h2>Project demo</h2>
+  <div class="video-frame" id="video-frame">
+    <div class="video-placeholder">
+      <span>Demo video coming soon</span>
+      <small>Replace this block with the embedded YouTube demo.</small>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════ SOURCES / METHODS / LIMITATIONS ══════════ -->
+<section class="prose sources" id="sources">
+  <div class="kicker">Behind the data</div>
+  <h2>Sources, methodology &amp; limitations</h2>
+
+  <h3>Data sources</h3>
+  <ul>
+    <li><strong>Atlantic sea surface temperature (long-term):</strong> Observed values from NOAA ERSST v5; future projections from CMIP6 GFDL-ESM4 under SSP1-2.6, SSP2-4.5, and SSP5-8.5. <em>(This series predates the satellite era and is shown as long-term context; it is a separate source from the GOES data below.)</em></li>
+    <li><strong>Satellite imagery &amp; sea surface temperature (recent):</strong> NOAA GOES (Geostationary Operational Environmental Satellites), accessed via the NOAA Open Data on AWS registry.</li>
+  </ul>
+
+  <h3>Methodology</h3>
+  <p id="methods-body">
+    The long-term chart shows annual-average Atlantic sea surface temperature (observed, then projected). The
+    satellite views come from <strong>NOAA GOES-16</strong>: the sea surface temperature map uses the
+    <code>ABI-L2-SSTF</code> product (quality-flagged, Kelvin converted to &deg;C, composited over a clear-sky
+    day, reprojected from the satellite&rsquo;s geostationary grid to latitude/longitude and downsampled), and
+    the storm scene uses <code>ABI-L2-MCMIPC</code> visible, clean-infrared, and water-vapor bands for
+    <strong>Hurricane Ian</strong> on 28 Sep 2022. All GOES data was processed offline in a notebook
+    (<code>process_goes.ipynb</code>) into small JSON grids and WebP images, so this page loads quickly and does
+    not depend on raw satellite files or any live data service. Because the sea surface is obscured by cloud
+    beneath an active storm, the SST shown in the storm scene is a recent clear-sky composite that represents the
+    warm water in the storm&rsquo;s path.
+  </p>
+
+  <h3>Limitations</h3>
+  <ul>
+    <li>Hurricane damage depends on landfall location, population exposure, infrastructure, preparedness, and reporting &mdash; not on ocean temperature alone.</li>
+    <li>Historical damage comparisons are affected by inflation and coastal development, so they are not used here as a direct climate signal.</li>
+    <li>A correlation between climate variables and hurricane activity does not, by itself, prove direct causation.</li>
+    <li>GOES water-vapor imagery shows <em>atmospheric moisture</em>, not measured rainfall; it is not a precipitation total.</li>
+    <li>This project focuses on long-term environmental patterns, not on predicting any individual storm.</li>
+  </ul>
+
+  <p class="footer-note">Built with D3.js · Data from NOAA. NOAA data is open to the public; this project is not endorsed by or affiliated with NOAA.</p>
+</section>
+
+<div id="tooltip"></div>
+
+<script src="main.js"></script>
+<script src="viz2-sst.js"></script>
+<script src="viz3-explorer.js"></script>
 </body>
 </html>
