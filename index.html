@@ -144,9 +144,10 @@
     <p>
       The long-term trend is one thing; the map of warmth in any given season is another. Using
       <strong>NOAA GOES satellite</strong> observations, we can look at sea surface temperature across the
-      tropical Atlantic &mdash; the region where most major hurricanes are born. Warmer water (toward the deep
-      reds) is the fuel; the dashed band marks the <em>main development region</em> where storms most often
-      spin up.
+      tropical Atlantic &mdash; the region where most major hurricanes are born. Use the buttons below the map to
+      compare <strong>hurricane season</strong> and <strong>non-hurricane season</strong> snapshots from the same
+      satellite. Warmer water (toward the deep reds) is the fuel; the dashed band marks the <em>main development
+      region</em> where storms most often spin up.
     </p>
   </div>
 
@@ -154,6 +155,11 @@
     <figcaption class="chart-head">
       <div class="chart-title" id="sst-map-title">Atlantic sea surface temperature &mdash; GOES satellite</div>
       <div class="chart-sub" id="sst-map-sub">Loading satellite data&hellip;</div>
+      <div id="sst-season-toggles" class="season-toggles" role="group" aria-label="Compare hurricane and non-hurricane season sea surface temperature">
+        <button type="button" class="season-btn active" data-season="hurricane" aria-pressed="true">Hurricane season</button>
+        <button type="button" class="season-btn" data-season="offseason" aria-pressed="false">Non-hurricane season</button>
+      </div>
+      <p id="sst-season-note" class="season-note" aria-live="polite"></p>
     </figcaption>
     <div id="sst-map-wrap">
       <svg id="sst-map" role="img" aria-label="Map of Atlantic sea surface temperature from GOES"></svg>
@@ -301,8 +307,9 @@
   <p id="methods-body">
     The long-term chart shows annual-average Atlantic sea surface temperature (observed, then projected). The
     satellite views come from <strong>NOAA GOES-16</strong>: the sea surface temperature map uses the
-    <code>ABI-L2-SSTF</code> product (quality-flagged, Kelvin converted to &deg;C, composited over a clear-sky
-    day, reprojected from the satellite&rsquo;s geostationary grid to latitude/longitude and downsampled), and
+    <code>ABI-L2-SSTF</code> product (quality-flagged, Kelvin converted to &deg;C, composited over clear-sky
+    days on <strong>2022-09-20</strong> and <strong>2022-02-15</strong> for seasonal comparison, reprojected to
+    latitude/longitude and downsampled with a shared color scale), and
     the storm scene uses <code>ABI-L2-MCMIPC</code> visible, clean-infrared, and water-vapor bands for
     <strong>Hurricane Ian</strong> on 28 Sep 2022. All GOES data was processed offline in a notebook
     (<code>process_goes.ipynb</code>) into small JSON grids and WebP images, so this page loads quickly and does

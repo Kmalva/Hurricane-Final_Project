@@ -14,7 +14,7 @@ https://kmalva.github.io/Hurricane-Final_Project/
 
 ## Visualizations
 1. **Atlantic SST scrollytelling** — annual sea surface temperature, 1900–2100, with projections revealed on scroll.
-2. **The fuel tank** — a GOES sea surface temperature heatmap of the tropical Atlantic, with the main development region annotated.
+2. **The fuel tank** — a GOES sea surface temperature heatmap of the tropical Atlantic with **hurricane season vs non-hurricane season** toggles (Sep 2022 vs Feb 2022 composites, shared color scale), MDR annotation, and seasonal callouts.
 3. **Ingredients of a storm (interactive centerpiece)** — Hurricane Ian (2022) as GOES saw it, with toggleable visible / infrared / sea-surface-temp / water-vapor layers, a hover read-out, and annotations.
 
 ## Data sources
@@ -26,13 +26,16 @@ https://kmalva.github.io/Hurricane-Final_Project/
 `process_goes.ipynb` pulls GOES-16 from S3 (anonymous), masks by data-quality flag, converts Kelvin to °C,
 reprojects the geostationary grid to latitude/longitude, downsamples, and exports lightweight artifacts:
 
-- `data/goes_sst_grid.json`, `data/goes_storm_sst.json` — SST grids (°C)
+- `data/goes_sst_grid_hurricane.json`, `data/goes_sst_grid_offseason.json` — Viz 2 seasonal SST grids (°C)
+- `data/goes_storm_sst.json` — storm-region SST grid (°C)
 - `data/goes_metadata.json` — describes which artifacts exist (keeps the frontend flexible)
-- `assets/goes_storm_visible.webp`, `goes_storm_ir.webp`, `goes_water_vapor.webp`, `goes_sst_layer.webp`, `goes_storm_sst.webp`
+- `assets/goes_storm_visible.webp`, `goes_storm_ir.webp`, `goes_water_vapor.webp`, `goes_storm_sst.webp`, seasonal SST WebP fallbacks
 
 **The website never reads NetCDF, never hits S3, and needs no Python at runtime** — it only loads the committed JSON/WebP.
 
-To regenerate: `pip install xarray s3fs netCDF4 zarr h5netcdf h5py pyproj matplotlib pillow`, then run `process_goes.ipynb`.
+To regenerate Viz 2 seasonal maps: `python3 scripts/export_viz2_seasons.py` (or run the Viz 2 cells in `process_goes.ipynb`).
+
+Other artifacts: `pip install xarray s3fs netCDF4 zarr h5netcdf h5py pyproj matplotlib pillow`, then run `process_goes.ipynb`.
 
 ## Limitations
 - Hurricane damage depends on landfall, population exposure, infrastructure, preparedness, and reporting — not ocean temperature alone.

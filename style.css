@@ -228,6 +228,47 @@ svg#main-chart { display: block; width: 100%; overflow: visible; }
 .chart-title { font-family: var(--serif); font-size: 1.2rem; font-weight: 600; }
 .chart-sub { font-size: 12.5px; color: var(--muted); margin-top: 0.15rem; }
 
+.season-toggles {
+  display: flex; flex-wrap: wrap; gap: 0.5rem;
+  margin-top: 0.85rem;
+}
+.season-btn {
+  font-family: var(--sans);
+  font-size: 0.88rem;
+  font-weight: 500;
+  padding: 0.45rem 0.95rem;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: var(--bg-soft);
+  color: var(--ink-soft);
+  cursor: pointer;
+  transition: background 0.18s, border-color 0.18s, color 0.18s, transform 0.05s;
+}
+.season-btn:hover {
+  background: #fff;
+  border-color: var(--ocean);
+  color: var(--ocean-deep);
+}
+.season-btn:active { transform: translateY(1px); }
+.season-btn.active {
+  background: rgba(14, 165, 233, 0.12);
+  border-color: var(--ocean);
+  color: var(--ocean-darker);
+  font-weight: 600;
+}
+.season-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+.season-note {
+  font-size: 12.5px;
+  color: var(--ink-soft);
+  margin-top: 0.55rem;
+  line-height: 1.55;
+  max-width: 52ch;
+}
+.season-note strong { color: var(--ink); font-weight: 600; }
+
 #sst-map-wrap { position: relative; width: 100%; }
 svg#sst-map { display: block; width: 100%; height: auto; overflow: visible; border-radius: 8px; }
 

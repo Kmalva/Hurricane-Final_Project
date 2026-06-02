@@ -1,0 +1,8 @@
+# Not part of the deployed site (skills live in ../.cursor/skills)
+.cursor/
+
+# OS / scratch
+.DS_Store
+_vtest*.html
+.ipynb_checkpoints/
+__pycache__/

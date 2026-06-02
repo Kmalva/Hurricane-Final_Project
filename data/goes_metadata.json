@@ -19,13 +19,17 @@
   },
   "reprojection": "success",
   "artifacts": {
-    "sst_grid": "data/goes_sst_grid.json",
-    "sst_layer": "assets/goes_sst_layer.webp",
+    "sst_grid": "data/goes_sst_grid_hurricane.json",
+    "sst_layer": "assets/goes_sst_layer_hurricane.webp",
     "storm_visible": "assets/goes_storm_visible.webp",
     "storm_ir": "assets/goes_storm_ir.webp",
     "water_vapor": "assets/goes_water_vapor.webp",
     "storm_sst_layer": "assets/goes_storm_sst.webp",
-    "storm_sst_grid": "data/goes_storm_sst.json"
+    "storm_sst_grid": "data/goes_storm_sst.json",
+    "sst_grid_hurricane": "data/goes_sst_grid_hurricane.json",
+    "sst_grid_offseason": "data/goes_sst_grid_offseason.json",
+    "sst_layer_hurricane": "assets/goes_sst_layer_hurricane.webp",
+    "sst_layer_offseason": "assets/goes_sst_layer_offseason.webp"
   },
   "boxes": {
     "broad": {
@@ -63,5 +67,29 @@
   "storm_sst": {
     "vmin": 29.05,
     "vmax": 31.0
+  },
+  "sst_seasons": {
+    "hurricane": {
+      "label": "Hurricane season",
+      "period": "Jun\u2013Nov (Atlantic)",
+      "day": "2022-09-20",
+      "grid": "data/goes_sst_grid_hurricane.json",
+      "layer": "assets/goes_sst_layer_hurricane.webp",
+      "vmin": 25.28,
+      "vmax": 30.9
+    },
+    "offseason": {
+      "label": "Non-hurricane season",
+      "period": "Dec\u2013May (Atlantic)",
+      "day": "2022-02-15",
+      "grid": "data/goes_sst_grid_offseason.json",
+      "layer": "assets/goes_sst_layer_offseason.webp",
+      "vmin": 19.12,
+      "vmax": 28.33
+    },
+    "color_domain": {
+      "vmin": 19.12,
+      "vmax": 30.9
+    }
   }
 }
