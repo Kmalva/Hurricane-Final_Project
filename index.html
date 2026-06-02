@@ -278,6 +278,123 @@
     more destructive potential</strong> &mdash; making hurricane risk a long-term climate issue, not a single
     bad season.
   </p>
+  <p style="margin-top:1.2rem;color:#c8e4f2;font-size:1.05rem;">
+    Scroll down to <strong style="color:#fff;">mix the ingredients yourself</strong> in the interactive lab.
+  </p>
+</section>
+
+<!-- ══════════════════════════════ HURRICANE INGREDIENTS LAB ════════════════ -->
+<section class="viz-section lab-section" id="hurricane-lab">
+  <div class="section-head">
+    <div class="kicker">Beyond the charts · mix the ingredients</div>
+    <h2>Build a hurricane: ingredients&nbsp;lab</h2>
+    <p>
+      Warm water alone does not tell the whole story. Adjust five ingredients and see how
+      <strong>storm environment</strong> and <strong>community impact potential</strong> can change when
+      multiple factors align &mdash; or when preparedness offsets exposure.
+    </p>
+  </div>
+
+  <div class="lab-card chart-card" id="lab-card">
+    <div class="lab-layout">
+      <div class="lab-controls" id="lab-controls">
+        <div class="panel-label">Ingredients</div>
+
+        <div class="lab-slider-row" data-key="oceanTemp">
+          <div class="lab-slider-head">
+            <label for="lab-oceanTemp">Ocean temperature</label>
+            <button type="button" class="lab-info" aria-expanded="false" aria-controls="tip-oceanTemp" data-tip="oceanTemp">i</button>
+          </div>
+          <input type="range" id="lab-oceanTemp" min="0" max="100" value="50" step="1" aria-valuetext="50">
+          <div class="lab-slider-ends"><span>Cooler</span><span>Warmer</span></div>
+          <p class="lab-tip" id="tip-oceanTemp" hidden>Warm water can provide energy for storms.</p>
+        </div>
+
+        <div class="lab-slider-row" data-key="moisture">
+          <div class="lab-slider-head">
+            <label for="lab-moisture">Atmospheric moisture</label>
+            <button type="button" class="lab-info" aria-expanded="false" aria-controls="tip-moisture" data-tip="moisture">i</button>
+          </div>
+          <input type="range" id="lab-moisture" min="0" max="100" value="50" step="1">
+          <div class="lab-slider-ends"><span>Dry</span><span>Moist</span></div>
+          <p class="lab-tip" id="tip-moisture" hidden>Moisture can support heavier rainfall potential.</p>
+        </div>
+
+        <div class="lab-slider-row" data-key="windShear">
+          <div class="lab-slider-head">
+            <label for="lab-windShear">Wind shear</label>
+            <button type="button" class="lab-info" aria-expanded="false" aria-controls="tip-windShear" data-tip="windShear">i</button>
+          </div>
+          <input type="range" id="lab-windShear" min="0" max="100" value="50" step="1">
+          <div class="lab-slider-ends"><span>Low</span><span>High</span></div>
+          <p class="lab-tip" id="tip-windShear" hidden>Strong wind shear can disrupt storm organization.</p>
+        </div>
+
+        <div class="lab-slider-row" data-key="coastalExposure">
+          <div class="lab-slider-head">
+            <label for="lab-coastalExposure">Coastal exposure</label>
+            <button type="button" class="lab-info" aria-expanded="false" aria-controls="tip-coastalExposure" data-tip="coastalExposure">i</button>
+          </div>
+          <input type="range" id="lab-coastalExposure" min="0" max="100" value="40" step="1">
+          <div class="lab-slider-ends"><span>Low</span><span>High</span></div>
+          <p class="lab-tip" id="tip-coastalExposure" hidden>More people and infrastructure can increase damage.</p>
+        </div>
+
+        <div class="lab-slider-row" data-key="preparedness">
+          <div class="lab-slider-head">
+            <label for="lab-preparedness">Preparedness</label>
+            <button type="button" class="lab-info" aria-expanded="false" aria-controls="tip-preparedness" data-tip="preparedness">i</button>
+          </div>
+          <input type="range" id="lab-preparedness" min="0" max="100" value="55" step="1">
+          <div class="lab-slider-ends"><span>Low</span><span>High</span></div>
+          <p class="lab-tip" id="tip-preparedness" hidden>Planning and resilient infrastructure can reduce harm.</p>
+        </div>
+
+        <div class="lab-presets-wrap">
+          <div class="panel-label">Presets</div>
+          <div class="lab-presets" role="group" aria-label="Preset scenarios">
+            <button type="button" class="lab-preset-btn" data-preset="calm">Calm Conditions</button>
+            <button type="button" class="lab-preset-btn" data-preset="warmOcean">Warm Ocean</button>
+            <button type="button" class="lab-preset-btn" data-preset="highEnv">High-Risk Storm Environment</button>
+            <button type="button" class="lab-preset-btn" data-preset="highExposure">High Exposure, Low Preparedness</button>
+            <button type="button" class="lab-preset-btn" data-preset="prepared">Prepared Community</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="lab-stage-wrap">
+        <svg id="lab-stage" viewBox="0 0 400 300" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Educational hurricane ingredient simulation scene"></svg>
+        <ul id="lab-annotations" class="lab-annotations" aria-live="polite"></ul>
+      </div>
+
+      <aside class="lab-panel" id="lab-panel">
+        <div class="panel-label">Live readout</div>
+        <div class="lab-score-block">
+          <div class="lab-score-label">Storm environment score</div>
+          <div class="lab-score-row">
+            <span id="lab-env-num" class="lab-score-num">—</span>
+            <span id="lab-env-badge" class="risk-badge risk-badge--moderate">Moderate</span>
+          </div>
+        </div>
+        <div class="lab-score-block">
+          <div class="lab-score-label">Community impact potential</div>
+          <div class="lab-score-row">
+            <span id="lab-impact-num" class="lab-score-num">—</span>
+            <span id="lab-impact-badge" class="risk-badge risk-badge--moderate">Moderate</span>
+          </div>
+        </div>
+        <div class="lab-risk-block">
+          <div class="panel-label">Main risk</div>
+          <p id="lab-main-risk" class="lab-main-risk">Adjust sliders to explore ingredient alignment.</p>
+        </div>
+        <div class="lab-caution" id="lab-caution">
+          <strong>Educational simulation only.</strong>
+          This is not a real hurricane forecast. It is a simplified interactive showing how hurricane-related
+          ingredients can combine to change storm environment and destructive potential.
+        </div>
+      </aside>
+    </div>
+  </div>
 </section>
 
 <!-- ══════════════════════════════ DEMO VIDEO SLOT ══════════════════════════ -->
@@ -325,6 +442,7 @@
     <li>A correlation between climate variables and hurricane activity does not, by itself, prove direct causation.</li>
     <li>GOES water-vapor imagery shows <em>atmospheric moisture</em>, not measured rainfall; it is not a precipitation total.</li>
     <li>This project focuses on long-term environmental patterns, not on predicting any individual storm.</li>
+    <li>The &ldquo;Build a hurricane&rdquo; lab uses a <strong>simplified educational scoring model</strong>; it does not forecast storms or calculate actual damage.</li>
   </ul>
 
   <p class="footer-note">Built with D3.js · Data from NOAA. NOAA data is open to the public; this project is not endorsed by or affiliated with NOAA.</p>
@@ -335,5 +453,6 @@
 <script src="main.js"></script>
 <script src="viz2-sst.js"></script>
 <script src="viz3-explorer.js"></script>
+<script src="hurricane-lab.js"></script>
 </body>
 </html>
