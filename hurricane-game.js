@@ -392,7 +392,7 @@
       const id = ring.getAttribute('data-zone');
       const on = zone.id === id;
       ring.classList.toggle('game-zone-ring--near', on);
-      ring.attr('opacity', on ? 0.85 : 0.4);
+      ring.setAttribute('opacity', on ? '0.85' : '0.45');
     });
   }
 
@@ -594,7 +594,11 @@
       setupPopupClose();
       setupKeyboard();
     } catch (e) {
-      showError('Interactive map could not load. Check that data/hurricane_zones.json is available.');
+      console.error('Hurricane game init failed:', e);
+      const hint = e && e.message ? e.message : 'unknown error';
+      showError(
+        'Interactive map could not load. If you are viewing a local copy, serve the site from the project folder (e.g. python3 -m http.server). Details: ' + hint
+      );
     }
   }
 
