@@ -291,10 +291,10 @@ svg#sst-map { display: block; width: 100%; height: auto; overflow: visible; bord
 /* ─────────────────────────── VIZ 3: EXPLORER ─────────────────────── */
 .explorer {
   display: grid;
-  grid-template-columns: minmax(0, 1.7fr) minmax(280px, 0.9fr);
+  grid-template-columns: minmax(0, 1fr) 300px;
   gap: 1.5rem;
   max-width: 1100px; margin: 0 auto;
-  align-items: stretch;
+  align-items: start;
 }
 .explorer-stage {
   position: relative;
@@ -302,8 +302,9 @@ svg#sst-map { display: block; width: 100%; height: auto; overflow: visible; bord
   border: 1px solid rgba(255,255,255,0.12);
   border-radius: 16px;
   overflow: hidden;
-  min-height: 420px;
   aspect-ratio: 4 / 3;
+  width: 100%;
+  min-width: 0;
   box-shadow: 0 18px 50px rgba(0,0,0,0.35);
 }
 .explorer-stage .layer-img {
@@ -312,6 +313,39 @@ svg#sst-map { display: block; width: 100%; height: auto; overflow: visible; bord
 }
 .explorer-stage svg.annot-layer { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
 .explorer-stage .hover-capture { position: absolute; inset: 0; cursor: crosshair; }
+
+/* 2x2 all-layers grid */
+.stage-grid {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr 1fr;
+  gap: 3px;
+  background: #000;
+  z-index: 10;
+}
+.stage-cell {
+  position: relative;
+  overflow: hidden;
+}
+.stage-cell-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.stage-cell-label {
+  position: absolute;
+  bottom: 6px;
+  left: 8px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  text-shadow: 0 1px 4px rgba(0,0,0,0.9), 0 0 8px rgba(0,0,0,0.7);
+  pointer-events: none;
+}
 
 .explorer-panel {
   background: rgba(255,255,255,0.05);
@@ -327,23 +361,88 @@ svg#sst-map { display: block; width: 100%; height: auto; overflow: visible; bord
 .panel-label { font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase; color: #7fd2f4; font-weight: 600; margin-bottom: 0.7rem; }
 
 .layer-toggles { display: flex; flex-direction: column; gap: 0.5rem; }
+
+/* Individual layer toggle buttons */
 .layer-btn {
-  display: flex; align-items: center; gap: 0.7rem;
+  display: grid;
+  grid-template-columns: 24px 1fr auto;
+  align-items: center;
+  gap: 8px;
   width: 100%; text-align: left;
   background: rgba(255,255,255,0.04);
-  border: 1px solid rgba(255,255,255,0.14);
-  color: #dbeefb;
+  border: 1px solid rgba(255,255,255,0.08);
+  color: rgba(255,255,255,0.5);
   padding: 0.6rem 0.8rem; border-radius: 10px;
   font-family: var(--sans); font-size: 0.92rem; cursor: pointer;
-  transition: background 0.18s, border-color 0.18s, transform 0.05s;
+  transition: background 0.18s, border-color 0.18s, box-shadow 0.18s, color 0.18s, transform 0.05s;
 }
-.layer-btn:hover { background: rgba(255,255,255,0.09); }
+.layer-btn:hover {
+  background: rgba(255,255,255,0.08);
+  border-color: rgba(255,255,255,0.18);
+  color: rgba(255,255,255,0.85);
+}
 .layer-btn:active { transform: translateY(1px); }
-.layer-btn .dot { width: 11px; height: 11px; border-radius: 50%; flex-shrink: 0; box-shadow: 0 0 0 2px rgba(255,255,255,0.12); }
-.layer-btn .layer-name { flex: 1; font-weight: 500; }
-.layer-btn .layer-state { font-size: 10.5px; letter-spacing: 0.12em; text-transform: uppercase; color: #7fd2f4; opacity: 0.7; }
-.layer-btn.active { background: rgba(14,165,233,0.22); border-color: rgba(125,210,244,0.6); color: #f4fbff; }
-.layer-btn.active .layer-state { opacity: 1; }
+.layer-btn.active {
+  border-color: var(--lb-accent, #7fd2f4);
+  background: var(--lb-accent-dim, rgba(127,210,244,0.12));
+  box-shadow: 0 0 0 1px var(--lb-accent, #7fd2f4) inset;
+  color: #fff;
+}
+
+/* Icon */
+.layer-btn .lb-icon {
+  font-size: 14px; line-height: 1; text-align: center;
+  opacity: 0.6; transition: opacity 0.15s;
+}
+.layer-btn.active .lb-icon { opacity: 1; }
+
+/* Name + sublabel stack */
+.layer-btn .lb-text { display: flex; flex-direction: column; gap: 1px; }
+.layer-btn .lb-name { font-size: 0.88rem; font-weight: 600; line-height: 1.2; }
+.layer-btn .lb-sublabel {
+  font-size: 10px; font-weight: 500; letter-spacing: 0.08em;
+  text-transform: uppercase; opacity: 0.45; transition: opacity 0.15s;
+}
+.layer-btn.active .lb-sublabel { opacity: 0.7; }
+
+/* On/Off pill */
+.layer-btn .lb-pill {
+  font-size: 10px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase;
+  padding: 2px 7px; border-radius: 999px;
+  background: rgba(255,255,255,0.07);
+  color: rgba(255,255,255,0.3);
+  border: 1px solid rgba(255,255,255,0.1);
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+  white-space: nowrap;
+}
+.layer-btn.active .lb-pill {
+  background: var(--lb-accent, #7fd2f4);
+  color: #000;
+  border-color: transparent;
+}
+
+/* Divider between individual buttons and All layers */
+.lb-divider {
+  height: 1px;
+  background: rgba(255,255,255,0.08);
+  margin: 2px 0;
+}
+
+/* All layers button — 2x2 color grid icon, purple accent */
+.layer-btn--all { --lb-accent: #a78bfa; --lb-accent-dim: rgba(167,139,250,0.15); }
+
+.lb-all-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2px;
+  width: 18px; height: 18px;
+  border-radius: 3px;
+  overflow: hidden;
+  opacity: 0.65;
+  transition: opacity 0.15s;
+}
+.layer-btn--all.active .lb-all-grid { opacity: 1; }
+.lb-all-grid span { display: block; }
 
 #time-slider { width: 100%; accent-color: var(--ocean); cursor: pointer; }
 .panel-time-readout { font-size: 12px; color: #9fd4ee; margin-top: 0.4rem; font-variant-numeric: tabular-nums; }
