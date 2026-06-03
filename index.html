@@ -291,87 +291,88 @@
     <h2>Make a hurricane</h2>
     <p class="game-dek">Where would a hurricane thrive?</p>
     <p>
-      What makes a hurricane stronger or weaker? Drag the storm across the Atlantic and compare sea temperature,
-      moisture, and wind conditions. The goal is not to predict a real storm, but to see how different
-      <strong>storm ingredients</strong> can combine &mdash; or work against each other.
+      What makes a hurricane stronger or weaker? Drag the storm across the Atlantic to dashed circles and
+      tap the ingredient maps below to explore sea temperature and moisture. The goal is not to predict a real storm,
+      but to see how different <strong>storm ingredients</strong> can combine &mdash; or work against each other.
     </p>
+    <p class="game-keyboard-hint">Tip: Tab to the map, then use arrow keys to nudge the storm.</p>
   </div>
 
   <div class="game-card chart-card" id="game-card">
-    <div class="game-layout">
-      <div class="game-sidebar" id="game-sidebar">
-        <p class="game-instructions">Drag the storm icon to the dashed circles. Use layer toggles to explore each ingredient. Optional challenges below.</p>
-        <div class="panel-label">Map layers</div>
-        <div class="game-layer-toggles" role="group" aria-label="Map ingredient layers">
-          <button type="button" class="season-btn game-layer-btn active" data-layer="sst" aria-pressed="true">Sea surface temperature</button>
-          <button type="button" class="season-btn game-layer-btn" data-layer="moisture" aria-pressed="false">Moisture</button>
-          <button type="button" class="season-btn game-layer-btn" data-layer="shear" aria-pressed="false">Wind shear</button>
-          <button type="button" class="season-btn game-layer-btn" data-layer="exposure" aria-pressed="false">Exposure</button>
-          <button type="button" class="season-btn game-layer-btn" data-layer="all" aria-pressed="false">All ingredients</button>
-        </div>
-        <p id="game-legend" class="game-legend" aria-live="polite"></p>
-        <div class="game-challenges-wrap">
-          <div class="panel-label">Guided challenges</div>
-          <div id="game-challenges" class="game-challenges" role="group" aria-label="Guided challenges"></div>
-        </div>
-        <p class="game-keyboard-hint">Tip: Tab to the map, then use arrow keys to nudge the storm.</p>
+    <div class="game-stack">
+      <div class="game-map-toolbar">
+        <button type="button" id="game-map-back" class="game-map-back" hidden>Back to exploration map</button>
       </div>
-
-      <div class="game-map-col">
-        <div class="game-map-wrap" id="game-map-wrap">
-          <svg id="game-map" viewBox="0 0 900 520" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Educational Atlantic map — drag the hurricane to explore storm ingredients"></svg>
-          <div id="game-popup" class="game-popup" hidden>
-            <button type="button" id="game-popup-close" class="game-popup-close" aria-label="Close">×</button>
-            <h3 id="game-popup-title" class="game-popup-title"></h3>
-            <p id="game-popup-body" class="game-popup-body"></p>
-          </div>
+      <div class="game-map-wrap" id="game-map-wrap">
+        <svg id="game-map" viewBox="0 0 900 520" preserveAspectRatio="xMidYMid meet" role="img" tabindex="0" aria-label="Educational Atlantic map — drag the hurricane to explore storm ingredients"></svg>
+        <div id="game-popup" class="game-popup" hidden>
+          <button type="button" id="game-popup-close" class="game-popup-close" aria-label="Close">×</button>
+          <h3 id="game-popup-title" class="game-popup-title"></h3>
+          <p id="game-popup-body" class="game-popup-body"></p>
         </div>
-        <p class="game-drag-hint chart-source">Drag <span class="game-hint-icon" aria-hidden="true">◎</span> to circles on the map.</p>
       </div>
+      <div class="game-thumb-strip" role="group" aria-label="Ingredient map previews">
+        <button type="button" class="game-thumb" data-layer="sst" aria-pressed="false" aria-label="View sea surface temperature on main map">
+          <div class="game-thumb-inner">
+            <div class="game-thumb-legend" id="game-thumb-legend-sst" aria-hidden="true"></div>
+            <div class="game-thumb-map">
+              <span class="game-thumb-title">Sea surface temperature</span>
+              <svg id="game-thumb-sst" viewBox="0 0 900 520" preserveAspectRatio="xMidYMid meet" aria-hidden="true"></svg>
+            </div>
+          </div>
+        </button>
+        <button type="button" class="game-thumb" data-layer="moisture" aria-pressed="false" aria-label="View moisture on main map">
+          <div class="game-thumb-inner">
+            <div class="game-thumb-legend" id="game-thumb-legend-moisture" aria-hidden="true"></div>
+            <div class="game-thumb-map">
+              <span class="game-thumb-title">Moisture</span>
+              <svg id="game-thumb-moisture" viewBox="0 0 900 520" preserveAspectRatio="xMidYMid meet" aria-hidden="true"></svg>
+            </div>
+          </div>
+        </button>
+      </div>
+      <p class="game-drag-hint chart-source">Drag <span class="game-hint-icon" aria-hidden="true">◎</span> to circles on the map. Tap a preview map to expand it.</p>
 
-      <aside class="game-panel" id="game-panel">
-        <div class="panel-label">At this location</div>
-        <p id="game-location-type" class="game-location-type">—</p>
-        <p id="game-storm-response" class="game-storm-response">—</p>
-
-        <div class="game-score-block">
-          <div class="game-score-label">Storm growth</div>
-          <div class="game-score-row">
-            <span id="game-growth-num" class="game-score-num">—</span>
-            <span id="game-growth-label" class="game-growth-label">—</span>
+      <div class="game-stats-row" id="game-panel">
+        <div class="game-stats-card">
+          <div class="panel-label">At this location</div>
+          <p id="game-location-type" class="game-location-type">—</p>
+          <p id="game-storm-response" class="game-storm-response">—</p>
+          <div class="game-score-block">
+            <div class="game-score-label">Storm growth</div>
+            <div class="game-score-row">
+              <span id="game-growth-num" class="game-score-num">—</span>
+              <span id="game-growth-label" class="game-growth-label">—</span>
+            </div>
           </div>
         </div>
 
-        <div class="game-bars">
-          <div class="game-bar-row"><span>Warm water</span><div class="game-bar"><div id="game-bar-sst" class="game-bar-fill game-bar-fill--warm"></div></div></div>
-          <div class="game-bar-row"><span>Moisture</span><div class="game-bar"><div id="game-bar-moisture" class="game-bar-fill game-bar-fill--moist"></div></div></div>
-          <div class="game-bar-row"><span>Wind shear</span><div class="game-bar"><div id="game-bar-shear" class="game-bar-fill game-bar-fill--shear"></div></div></div>
-          <div class="game-bar-row"><span>Exposure</span><div class="game-bar"><div id="game-bar-exposure" class="game-bar-fill game-bar-fill--exp"></div></div></div>
-          <div class="game-bar-row"><span>Preparedness</span><div class="game-bar"><div id="game-bar-prep" class="game-bar-fill game-bar-fill--prep"></div></div></div>
-        </div>
-
-        <div class="game-score-block">
-          <div class="game-score-label">Community impact potential</div>
-          <div class="game-score-row">
-            <span id="game-impact-num" class="game-score-num">—</span>
-            <span id="game-impact-badge" class="risk-badge risk-badge--moderate">Moderate</span>
+        <div class="game-stats-card game-stats-card--bars">
+          <div class="panel-label">Ingredients</div>
+          <div class="game-bars">
+            <div class="game-bar-row"><span>Warm water</span><div class="game-bar"><div id="game-bar-sst" class="game-bar-fill game-bar-fill--warm"></div></div></div>
+            <div class="game-bar-row"><span>Moisture</span><div class="game-bar"><div id="game-bar-moisture" class="game-bar-fill game-bar-fill--moist"></div></div></div>
+            <div class="game-bar-row"><span>Wind shear</span><div class="game-bar"><div id="game-bar-shear" class="game-bar-fill game-bar-fill--shear"></div></div></div>
+            <div class="game-bar-row"><span>Exposure</span><div class="game-bar"><div id="game-bar-exposure" class="game-bar-fill game-bar-fill--exp"></div></div></div>
+            <div class="game-bar-row"><span>Preparedness</span><div class="game-bar"><div id="game-bar-prep" class="game-bar-fill game-bar-fill--prep"></div></div></div>
           </div>
         </div>
 
-        <div class="game-risk-block">
-          <div class="panel-label">Why this happened</div>
-          <p id="game-main-reason" class="game-main-reason">Drag the storm to a zone to explore ingredient alignment.</p>
-          <p id="game-explanation" class="game-explanation"></p>
+        <div class="game-stats-card">
+          <div class="game-score-block">
+            <div class="game-score-label">Community impact potential</div>
+            <div class="game-score-row">
+              <span id="game-impact-num" class="game-score-num">—</span>
+              <span id="game-impact-badge" class="risk-badge risk-badge--moderate">Moderate</span>
+            </div>
+          </div>
+          <div class="game-risk-block">
+            <div class="panel-label">Why this happened</div>
+            <p id="game-main-reason" class="game-main-reason">Drag the storm to a zone to explore ingredient alignment.</p>
+            <p id="game-explanation" class="game-explanation"></p>
+          </div>
         </div>
-
-        <p id="game-challenge-feedback" class="game-feedback" aria-live="polite"></p>
-
-        <div class="game-caution" id="game-caution">
-          <strong>Educational simulation only.</strong>
-          This is not a real hurricane forecast. It is a simplified model showing how storm ingredients
-          may combine to affect growth environment and community impact potential.
-        </div>
-      </aside>
+      </div>
     </div>
   </div>
 </section>
@@ -425,7 +426,7 @@
     <li>GOES water-vapor imagery shows <em>atmospheric moisture</em>, not measured rainfall; it is not a precipitation total.</li>
     <li>This project focuses on long-term environmental patterns, not on predicting any individual storm.</li>
     <li>The &ldquo;Make a hurricane&rdquo; drag-map uses <strong>illustrative zone scores (0&ndash;100)</strong> and a simplified educational model; it does not forecast storms, predict landfall, or calculate actual damage.</li>
-    <li>Moisture and wind shear map layers are <strong>schematic</strong>; only the optional SST layer uses a processed GOES snapshot (Sep 2022).</li>
+    <li>The game moisture map is a <strong>schematic field</strong> derived from zone scores; sea surface temperature uses a processed GOES snapshot when available (Sep 2022).</li>
   </ul>
 
   <p class="footer-note">Built with D3.js · Data from NOAA. NOAA data is open to the public; this project is not endorsed by or affiliated with NOAA.</p>
@@ -436,6 +437,6 @@
 <script src="main.js"></script>
 <script src="viz2-sst.js"></script>
 <script src="viz3-explorer.js"></script>
-<script src="hurricane-game.js?v=2"></script>
+<script src="hurricane-game.js?v=4"></script>
 </body>
 </html>
