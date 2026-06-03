@@ -576,6 +576,18 @@
   }
 
   function showError(msg) {
+    const map = document.getElementById('game-map');
+    if (map) {
+      d3.select(map).selectAll('*').remove();
+      d3.select(map)
+        .append('foreignObject')
+        .attr('width', MAP_W)
+        .attr('height', MAP_H)
+        .append('xhtml:div')
+        .attr('class', 'game-error')
+        .text(msg);
+      return;
+    }
     const wrap = document.getElementById('game-map-wrap');
     if (wrap) wrap.innerHTML = `<p class="game-error">${msg}</p>`;
   }
