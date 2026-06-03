@@ -11,15 +11,23 @@
 (function () {
   'use strict';
 
-  // layer registry — bottom→top z-order; only used if the artifact exists
+  // layer registry — ordered ocean→storm→atmosphere (narrative build-up)
   const LAYER_DEFS = [
-    { id: 'storm_visible', key: 'storm_visible', name: 'Visible', dot: '#e5e7eb', z: 1, op: 1.0, defaultOn: true,
-      desc: 'Visible light — sunlight reflected off the cloud tops. You can pick out the eye and the spiral rain bands.' },
-    { id: 'storm_ir', key: 'storm_ir', name: 'Infrared', dot: '#fb923c', z: 2, op: 1.0, defaultOn: false,
-      desc: 'Infrared — color shows cloud-top temperature. The coldest, highest tops (brightest) ring the eye, where the storm is most intense.' },
-    { id: 'storm_sst_layer', key: 'storm_sst_layer', name: 'Sea surface temp', dot: '#ef4444', z: 3, op: 0.78, defaultOn: false,
+    { id: 'storm_sst_layer', key: 'storm_sst_layer', name: 'Sea surface temp', icon: '🌊',
+      accent: '#ef4444', accentDim: 'rgba(239,68,68,0.15)',
+      z: 1, op: 0.78, defaultOn: false, label: 'The fuel',
       desc: 'Sea surface temperature — the warm Gulf water beneath the storm (≈29–31 °C) that supplied its energy. This is the fuel.' },
-    { id: 'water_vapor', key: 'water_vapor', name: 'Water vapor', dot: '#38bdf8', z: 4, op: 0.82, defaultOn: false,
+    { id: 'storm_visible', key: 'storm_visible', name: 'Visible', icon: '🛰️',
+      accent: '#e2e8f0', accentDim: 'rgba(226,232,240,0.12)',
+      z: 2, op: 1.0, defaultOn: true, label: 'The storm',
+      desc: 'Visible light — sunlight reflected off the cloud tops. You can pick out the eye and the spiral rain bands.' },
+    { id: 'storm_ir', key: 'storm_ir', name: 'Infrared', icon: '🌡️',
+      accent: '#fb923c', accentDim: 'rgba(251,146,60,0.15)',
+      z: 3, op: 1.0, defaultOn: false, label: 'Intensity',
+      desc: 'Infrared — color shows cloud-top temperature. The coldest, highest tops (brightest) ring the eye, where the storm is most intense.' },
+    { id: 'water_vapor', key: 'water_vapor', name: 'Water vapor', icon: '💧',
+      accent: '#38bdf8', accentDim: 'rgba(56,189,248,0.15)',
+      z: 4, op: 0.82, defaultOn: false, label: 'Moisture',
       desc: 'Water vapor — atmospheric moisture in the mid- and upper-atmosphere. Deeper blues trace the moist air spiralling into the storm. (Moisture, not measured rainfall.)' },
   ];
 
@@ -55,6 +63,7 @@
     buildStage(stage, layers, art);
     buildToggles(layers);
     buildAnnotations(stage);
+    addAnnotationsToGrid();
 
     layers.filter(l => l.defaultOn).forEach(l => active.add(l.id));
     syncLayers(layers);
@@ -62,6 +71,7 @@
   }
 
   function buildStage(stage, layers, art) {
+    // Stack layer: full-stage images for single-layer mode
     layers.forEach(l => {
       const img = document.createElement('img');
       img.className = 'layer-img';
@@ -74,7 +84,29 @@
       stage.appendChild(img);
     });
 
-    // hover capture (top-most)
+    // Grid layer: 2x2 container for all-mode
+    const grid = document.createElement('div');
+    grid.className = 'stage-grid';
+    grid.id = 'stage-grid';
+    grid.style.display = 'none';
+    layers.forEach(l => {
+      const cell = document.createElement('div');
+      cell.className = 'stage-cell';
+      const cellImg = document.createElement('img');
+      cellImg.src = art[l.key];
+      cellImg.alt = l.name;
+      cellImg.className = 'stage-cell-img';
+      const label = document.createElement('span');
+      label.className = 'stage-cell-label';
+      label.textContent = l.name;
+      label.style.color = l.accent;
+      cell.appendChild(cellImg);
+      cell.appendChild(label);
+      grid.appendChild(cell);
+    });
+    stage.appendChild(grid);
+
+    // hover capture (top-most, single-layer mode only)
     const cap = document.createElement('div');
     cap.className = 'hover-capture';
     cap.style.zIndex = '50';
@@ -83,42 +115,119 @@
     cap.addEventListener('mouseleave', setReadoutDefault);
   }
 
+  let allMode = false;
+
   function buildToggles(layers) {
     const host = document.getElementById('layer-toggles');
     host.innerHTML = '';
+
+    // Individual layer buttons — radio style, one active at a time
     layers.forEach(l => {
       const btn = document.createElement('button');
       btn.className = 'layer-btn';
       btn.dataset.layer = l.id;
-      btn.innerHTML = `<span class="dot" style="background:${l.dot}"></span>` +
-        `<span class="layer-name">${l.name}</span>` +
-        `<span class="layer-state">Off</span>`;
+      btn.style.setProperty('--lb-accent', l.accent);
+      btn.style.setProperty('--lb-accent-dim', l.accentDim);
+      btn.innerHTML =
+        `<span class="lb-icon" aria-hidden="true">${l.icon}</span>` +
+        `<span class="lb-text">` +
+          `<span class="lb-name">${l.name}</span>` +
+          `<span class="lb-sublabel">${l.label}</span>` +
+        `</span>` +
+        `<span class="lb-pill">Off</span>`;
       btn.addEventListener('click', () => {
-        if (active.has(l.id)) active.delete(l.id); else active.add(l.id);
+        allMode = false;
+        active.clear();
+        active.add(l.id);
         syncLayers(layers);
         setReadout(l);
       });
       host.appendChild(btn);
     });
+
+    // Divider
+    const div = document.createElement('div');
+    div.className = 'lb-divider';
+    host.appendChild(div);
+
+    // All layers button (2x2 grid icon)
+    const allBtn = document.createElement('button');
+    allBtn.className = 'layer-btn layer-btn--all';
+    allBtn.id = 'layer-btn-all';
+    allBtn.innerHTML =
+      `<span class="lb-all-grid" aria-hidden="true">` +
+        `<span style="background:#ef4444"></span>` +
+        `<span style="background:#e2e8f0"></span>` +
+        `<span style="background:#fb923c"></span>` +
+        `<span style="background:#38bdf8"></span>` +
+      `</span>` +
+      `<span class="lb-text">` +
+        `<span class="lb-name">All layers</span>` +
+        `<span class="lb-sublabel">Combined view</span>` +
+      `</span>` +
+      `<span class="lb-pill" id="lb-all-pill">Off</span>`;
+    allBtn.addEventListener('click', () => {
+      allMode = !allMode;
+      if (allMode) {
+        layers.forEach(l => active.add(l.id));
+      } else {
+        active.clear();
+        const def = layers.find(l => l.defaultOn) || layers[0];
+        if (def) active.add(def.id);
+      }
+      syncLayers(layers);
+      document.getElementById('readout-body').innerHTML = allMode
+        ? 'All four satellite layers are stacked. Hover the scene to read sea surface temperature beneath the storm.'
+        : 'Hover the satellite scene to read the sea surface temperature, and toggle layers to stack the ingredients: <strong>warm water</strong>, <strong>storm</strong>, and <strong>moisture</strong>.';
+    });
+    host.appendChild(allBtn);
   }
 
   function syncLayers(layers) {
     const stage = document.getElementById('explorer-stage');
+    const grid = document.getElementById('stage-grid');
+    const cap = stage.querySelector('.hover-capture');
+    const annot = document.getElementById('annot-svg');
+
+    if (allMode) {
+      // Show 2x2 grid, hide stacked images and overlays
+      layers.forEach(l => {
+        const img = stage.querySelector(`img[data-layer="${l.id}"]`);
+        if (img) img.style.opacity = '0';
+      });
+      if (grid) grid.style.display = 'grid';
+      if (cap) cap.style.display = 'none';
+      if (annot) annot.style.display = 'none';
+    } else {
+      // Show stacked single-layer mode
+      if (grid) grid.style.display = 'none';
+      if (cap) cap.style.display = '';
+      if (annot) annot.style.display = '';
+      layers.forEach(l => {
+        const img = stage.querySelector(`img[data-layer="${l.id}"]`);
+        if (img) img.style.opacity = active.has(l.id) ? img.dataset.op : '0';
+      });
+      if (annot) {
+        annot.querySelector('#annot-warm').style.opacity = active.has('storm_sst_layer') ? 1 : 0;
+        annot.querySelector('#annot-moist').style.opacity = active.has('water_vapor') ? 1 : 0;
+      }
+    }
+
+    // Sync individual button states
     layers.forEach(l => {
-      const img = stage.querySelector(`img[data-layer="${l.id}"]`);
-      if (img) img.style.opacity = active.has(l.id) ? img.dataset.op : '0';
       const btn = document.querySelector(`.layer-btn[data-layer="${l.id}"]`);
       if (btn) {
-        btn.classList.toggle('active', active.has(l.id));
-        btn.querySelector('.layer-state').textContent = active.has(l.id) ? 'On' : 'Off';
+        const singleActive = active.has(l.id) && !allMode;
+        btn.classList.toggle('active', singleActive);
+        btn.querySelector('.lb-pill').textContent = singleActive ? 'On' : 'Off';
       }
     });
-    // annotations adapt to what's visible
-    const annot = document.getElementById('annot-svg');
-    if (annot) {
-      annot.querySelector('#annot-warm').style.opacity = active.has('storm_sst_layer') ? 1 : 0;
-      annot.querySelector('#annot-moist').style.opacity = active.has('water_vapor') ? 1 : 0;
-    }
+
+    // all-layers button
+    const allBtn = document.getElementById('layer-btn-all');
+    const allPill = document.getElementById('lb-all-pill');
+    if (allBtn) allBtn.classList.toggle('active', allMode);
+    if (allPill) allPill.textContent = allMode ? 'On' : 'Off';
   }
 
   // normalized helpers (image spans the storm BOX exactly; north = top)
@@ -157,7 +266,7 @@
 
   function setReadout(layer) {
     document.getElementById('readout-body').innerHTML =
-      `<span class="readout-hint" style="text-transform:uppercase;letter-spacing:.1em;color:#7fd2f4">${layer.name}${active.has(layer.id) ? '' : ' · off'}</span>` +
+      `<span class="readout-hint" style="text-transform:uppercase;letter-spacing:.1em;color:${layer.accent}">${layer.name}</span>` +
       `<div style="margin-top:.4rem">${layer.desc}</div>`;
   }
 
@@ -180,13 +289,13 @@
 
     const s = META.storm || {};
     const lf = s.landfall || { lon: -82.3, lat: 26.7, name: 'SW Florida' };
-    const eye = { lon: lf.lon - 0.9, lat: lf.lat - 0.4 };
+    const eye = { lon: lf.lon+.05, lat: lf.lat+.1 };
     const ex = nxOf(eye.lon) * VW, ey = nyOf(eye.lat) * VH;
     const lx = nxOf(lf.lon) * VW, ly = nyOf(lf.lat) * VH;
 
     // eye: ring + label to the LEFT (anchor end) to avoid the landfall label
     const ring = document.createElementNS(NS, 'circle');
-    ring.setAttribute('cx', ex); ring.setAttribute('cy', ey); ring.setAttribute('r', 16);
+    ring.setAttribute('cx', ex); ring.setAttribute('cy', ey); ring.setAttribute('r', 24);
     ring.setAttribute('fill', 'none'); ring.setAttribute('stroke', '#fff'); ring.setAttribute('stroke-width', 2.2);
     svg.appendChild(ring);
     textNode(svg, NS, ex - 22, ey + 5, 'Eye / eyewall', '#fff', 'end');
@@ -194,15 +303,33 @@
     // landfall: pin + label ABOVE-right
     const dot = document.createElementNS(NS, 'circle');
     dot.setAttribute('cx', lx); dot.setAttribute('cy', ly); dot.setAttribute('r', 6);
-    dot.setAttribute('fill', '#fde047'); dot.setAttribute('stroke', '#000'); dot.setAttribute('stroke-width', 1.2);
+    dot.setAttribute('fill', '#1af64e'); dot.setAttribute('stroke', '#000'); dot.setAttribute('stroke-width', 1.2);
     svg.appendChild(dot);
-    textNode(svg, NS, lx + 12, ly - 12, `Landfall · ${(lf.name || 'coast')}`, '#fde047', 'start');
+    textNode(svg, NS, lx + 12, ly - 12, `Landfall · ${(lf.name || 'coast')}`, '#1af64e', 'start');
 
     // adaptive callouts (shown when their layer is active)
     const warm = textNode(svg, NS, 18, VH - 40, 'Warm Gulf water — the fuel', '#fff', 'start');
     warm.setAttribute('id', 'annot-warm'); warm.style.opacity = 0;
     const moist = textNode(svg, NS, 18, VH - 16, 'Moisture spiralling into the storm', '#e0f2fe', 'start');
     moist.setAttribute('id', 'annot-moist'); moist.style.opacity = 0;
+  }
+
+  function addAnnotationsToGrid() {
+    const annot = document.getElementById('annot-svg');
+    const grid = document.getElementById('stage-grid');
+    if (!annot || !grid) return;
+    // Clone the annotation SVG (without the adaptive warm/moist callouts) into each cell
+    grid.querySelectorAll('.stage-cell').forEach(cell => {
+      const clone = annot.cloneNode(true);
+      clone.removeAttribute('id');
+      // Hide the adaptive callouts in grid cells — they're layer-specific
+      const warm = clone.querySelector('#annot-warm');
+      const moist = clone.querySelector('#annot-moist');
+      if (warm) warm.remove();
+      if (moist) moist.remove();
+      clone.style.zIndex = '5';
+      cell.appendChild(clone);
+    });
   }
 
   function textNode(svg, NS, x, y, text, color, anchor) {
