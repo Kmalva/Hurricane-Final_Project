@@ -223,7 +223,7 @@
 <section class="beat beat-but">
   <div class="beat-inner">
     <div class="beat-tag">But</div>
-    <p>Warmth and moisture are not the whole story. What a storm <em>does</em> depends on where it lands, who lives there, and how prepared they&nbsp;are.</p>
+    <p id="but-reveal"><span class="br-before">Warmth and moisture are </span><span class="br-not">not&nbsp;</span><span class="br-after">the whole story.</span> <span class="br-rest">What a storm <em>does</em> depends on where it lands, who lives there, and how prepared they&nbsp;are.</span></p>
   </div>
 </section>
 
@@ -433,6 +433,31 @@
 
 <div id="tooltip"></div>
 
+<script>
+(function () {
+  var el = document.getElementById('but-reveal');
+  if (!el) return;
+  var notEl = el.querySelector('.br-not');
+
+  function measure() {
+    // offsetWidth gives layout width (unaffected by scaleX transform)
+    el.style.setProperty('--not-w', (notEl ? notEl.offsetWidth : 0) + 'px');
+  }
+  measure();
+  // Re-measure after web fonts load in case fallback font gave a different width
+  if (document.fonts && document.fonts.ready) {
+    document.fonts.ready.then(measure);
+  }
+
+  var obs = new IntersectionObserver(function (entries) {
+    if (!entries[0].isIntersecting) return;
+    obs.disconnect();
+    setTimeout(function () { el.classList.add('phase-not'); }, 900);
+    setTimeout(function () { el.classList.add('phase-rest'); }, 1700);
+  }, { threshold: 0.55 });
+  obs.observe(el);
+})();
+</script>
 <script src="main.js"></script>
 <script src="viz2-sst.js"></script>
 <script src="viz3-explorer.js"></script>

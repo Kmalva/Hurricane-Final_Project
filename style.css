@@ -161,6 +161,39 @@ strong { font-weight: 600; }
 .beat-but .beat-tag { background: rgba(249,115,22,0.2); color: #ffb877; }
 .beat-but p { color: #eaf6ff; }
 
+/* ─── "not" reveal animation inside .beat-but ─── */
+.br-not {
+  display: inline-block;
+  vertical-align: baseline;
+  opacity: 0;
+  transform: scaleX(0);
+  transform-origin: center center;
+  will-change: transform, opacity;
+  transition: opacity 0.35s ease,
+              transform 0.65s cubic-bezier(0.22, 1, 0.36, 1);
+}
+/* "the whole story." starts shifted left by the measured width of "not ",
+   making it appear adjacent to "are " before the animation fires */
+.br-after {
+  display: inline-block;
+  vertical-align: baseline;
+  transform: translateX(calc(-1 * var(--not-w, 0px)));
+  will-change: transform;
+  transition: transform 0.65s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.br-rest {
+  opacity: 0;
+  transition: opacity 0.85s ease;
+}
+#but-reveal.phase-not .br-not  { opacity: 1; transform: scaleX(1); }
+#but-reveal.phase-not .br-after { transform: translateX(0); }
+#but-reveal.phase-rest .br-rest { opacity: 1; }
+@media (prefers-reduced-motion: reduce) {
+  .br-not  { opacity: 1; transform: none; transition: none; }
+  .br-after { transform: none; transition: none; }
+  .br-rest { opacity: 1; transition: none; }
+}
+
 /* ─────────────────────────── VIZ 1: SCROLLY (preserved IDs) ──────── */
 #scrolly { display: flex; position: relative; background: var(--bg); }
 
