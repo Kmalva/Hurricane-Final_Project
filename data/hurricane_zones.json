@@ -14,7 +14,7 @@
     "preparedness": 60,
     "locationType": "Open ocean",
     "stormResponse": "Mixed conditions",
-    "explanation": "Ingredient alignment varies over the open ocean. Drag to a highlighted zone to compare typical regional combinations."
+    "explanation": "Ingredient alignment varies over the open ocean. Click a highlighted zone to compare typical regional combinations."
   },
   "zones": [
     {

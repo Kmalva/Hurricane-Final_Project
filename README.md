@@ -16,7 +16,7 @@ https://kmalva.github.io/Hurricane-Final_Project/
 1. **Atlantic SST scrollytelling** — annual sea surface temperature, 1900–2100, with projections revealed on scroll.
 2. **The fuel tank** — a GOES sea surface temperature heatmap of the tropical Atlantic with **hurricane season vs non-hurricane season** toggles (Sep 2022 vs Feb 2022 composites, shared color scale), MDR annotation, and seasonal callouts.
 3. **Ingredients of a storm (interactive centerpiece)** — Hurricane Ian (2022) as GOES saw it, with toggleable visible / infrared / sea-surface-temp / water-vapor layers, a hover read-out, and annotations.
-4. **Make a hurricane (drag-map game)** — after the takeaway, drag a storm across an Atlantic map with educational zones, layer toggles (SST / moisture / wind shear / exposure), guided challenges, and transparent scoring. Uses `data/hurricane_zones.json` plus optional GOES SST backdrop. Not a forecast.
+4. **Make a hurricane (drag-map game)** — after the takeaway, drag a storm across an Atlantic exploration map with educational zones, SST and moisture preview maps (with legends and storm-position dots), click-to-expand ingredient views, and transparent scoring. Uses `data/hurricane_zones.json` plus optional GOES SST backdrop. Not a forecast.
 
 ## Data sources
 - **Long-term SST:** NOAA ERSST v5 (observed) and CMIP6 GFDL-ESM4 (SSP1-2.6 / SSP2-4.5 / SSP5-8.5 projections). *(Separate source from GOES; shown as long-term context.)*
@@ -38,14 +38,14 @@ To regenerate Viz 2 seasonal maps: `python3 scripts/export_viz2_seasons.py` (or 
 
 Other artifacts: `pip install xarray s3fs netCDF4 zarr h5netcdf h5py pyproj matplotlib pillow`, then run `process_goes.ipynb`.
 
-The **drag-map game** (`hurricane-game.js`) loads `data/hurricane_zones.json` for illustrative zone scores; optional GOES SST grid for the temperature layer only.
+The **drag-map game** (`hurricane-game.js`) loads `data/hurricane_zones.json` for illustrative zone scores; optional GOES SST grid for the sea-surface temperature layer. Moisture is a schematic IDW field derived from zone scores.
 
 ## Limitations
 - Hurricane damage depends on landfall, population exposure, infrastructure, preparedness, and reporting — not ocean temperature alone.
 - GOES water-vapor imagery shows atmospheric moisture, not measured precipitation.
 - Correlation between climate variables and hurricane activity does not, by itself, prove causation.
 - The project focuses on long-term environmental patterns, not on predicting individual storms.
-- The drag-map game uses illustrative zone scores and schematic moisture/shear layers; it is not a hurricane forecast or damage model.
+- The drag-map game uses illustrative zone scores and a schematic moisture field; it is not a hurricane forecast or damage model.
 
 ## Run locally
 ```bash
