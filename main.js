@@ -311,6 +311,9 @@
     d3.select('#c585 rect').transition().duration(show585 ? 1200 : 0).ease(d3.easeCubicInOut).attr('width', show585 ? w585 : 0);
 
     document.getElementById('legend').classList.toggle('visible', step >= 1);
+
+    const backBtn = document.getElementById('back-to-story');
+    if (backBtn) backBtn.hidden = step < 1;
   }
 
   // ── SCROLL WIRING (scoped to Viz 1 steps only) ──
@@ -370,10 +373,21 @@
     render();
   }
 
+  function setupBackToStory() {
+    const backBtn = document.getElementById('back-to-story');
+    if (!backBtn) return;
+    backBtn.addEventListener('click', () => {
+      if (window.StoryIntro && typeof window.StoryIntro.reopen === 'function') {
+        window.StoryIntro.reopen();
+      }
+    });
+  }
+
   loadData().then(() => {
     build();
     setupScroll();
     setupIris();
+    setupBackToStory();
     window.addEventListener('resize', build);
   }).catch(err => console.warn('[viz1] data load failed:', err));
 

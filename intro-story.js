@@ -18,7 +18,6 @@
 
   const BEAT_DELAY_MS = 2400;
   const PUNCHLINE_PAUSE_MS = 1100;
-  const BUTTON_DELAY_MS = 550;
 
   let timers = [];
 
@@ -70,8 +69,9 @@
   function revealScreen(screen, done) {
     const beats = Array.from(screen.querySelectorAll('.story-beat'));
     const button = screen === screenOne ? nextBtn : enterBtn;
+    const otherButton = screen === screenOne ? enterBtn : nextBtn;
 
-    hideActionButton(button);
+    hideActionButton(otherButton);
     intro.classList.remove('is-punchline-ocean', 'is-punchline-thesis');
     resetScreen(screen);
 
@@ -82,8 +82,9 @@
       return;
     }
 
+    showActionButton(button);
+
     let delay = 350;
-    let lastRevealDelay = delay;
     beats.forEach((beat, index) => {
       if (index > 0) {
         delay += BEAT_DELAY_MS;
@@ -91,17 +92,13 @@
           delay += PUNCHLINE_PAUSE_MS;
         }
       }
-      lastRevealDelay = delay;
       queue(() => {
         beat.classList.add('is-visible');
         setPunchlineEffect(beat);
       }, delay);
     });
 
-    queue(() => {
-      showActionButton(button);
-      if (done) done();
-    }, lastRevealDelay + BUTTON_DELAY_MS);
+    if (done) queue(done, delay + 100);
   }
 
   function startSecondScreen() {
@@ -139,6 +136,19 @@
     }
     queue(onDone, 520);
   }
+
+  function reopenIntro() {
+    clearTimers();
+    intro.hidden = false;
+    intro.classList.remove('is-exiting');
+    document.body.classList.add('story-locked');
+    activateScreen(screenOne);
+    hideActionButton(enterBtn);
+    revealScreen(screenOne);
+    window.scrollTo({ top: 0, behavior: prefersReducedMotion ? 'auto' : 'smooth' });
+  }
+
+  window.StoryIntro = { reopen: reopenIntro };
 
   document.body.classList.add('story-locked');
   hideActionButton(nextBtn);

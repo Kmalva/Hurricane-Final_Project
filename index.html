@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=9">
+  <link rel="stylesheet" href="style.css?v=12">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/scrollama/3.2.0/scrollama.min.js"></script>
 </head>
@@ -51,6 +51,7 @@
 <section id="scrolly">
 
   <div id="sticky-graphic">
+    <button type="button" id="back-to-story" class="back-to-story-btn" hidden>Back to the Story</button>
     <div id="chart-wrap">
       <p class="story-transition">The Atlantic has already warmed. What happens next depends on future emissions.</p>
       <div id="chart-title">Atlantic Sea Surface Temperature, 1900&ndash;2100</div>
@@ -217,69 +218,95 @@
   <div class="explorer-caption chart-source" id="explorer-source">Source: NOAA GOES. See methods.</div>
 </section>
 
-<!-- ══════════════════════════════ BEAT: BUT ════════════════════════════════ -->
-<section class="beat beat-but">
-  <div class="beat-inner">
-    <div class="beat-tag">But</div>
-    <p id="but-reveal"><span class="br-before">Warmth and moisture are </span><span class="br-not">not&nbsp;</span><span class="br-after">the whole story.</span> <span class="br-rest">What a storm <em>does</em> depends on where it lands, who lives there, and how prepared they&nbsp;are.</span></p>
-  </div>
-</section>
+<!-- ══════════════════════════════ FOLLOW THE FUEL (BUT → THEREFORE → TAKEAWAY) ═ -->
+<section id="follow-the-fuel" aria-label="Follow the fuel: the emissions behind a warming ocean">
 
-<!-- ══════════════════════════════ COMMUNITY IMPACT (THEREFORE) ═════════════ -->
-<section class="prose" id="community">
-  <div class="kicker">Why it reaches the shore</div>
-  <h2>Destruction is built on the coast, not just at&nbsp;sea</h2>
-  <p>
-    Two storms with identical winds can leave wildly different damage behind. A powerful hurricane that stays
-    offshore may harm no one; a weaker, slow-moving storm that stalls over a city can cause catastrophic
-    flooding. Damage depends on <strong>landfall location, population exposure, infrastructure, drainage, and
-    preparedness</strong> &mdash; human factors layered on top of the physical ones.
-  </p>
-  <div class="impact-grid">
-    <div class="impact-card">
-      <div class="impact-icon">🌊</div>
-      <h3>Warm ocean</h3>
-      <p>Provides energy. More heat available can support higher peak intensity.</p>
-    </div>
-    <div class="impact-card">
-      <div class="impact-icon">💨</div>
-      <h3>Atmospheric moisture</h3>
-      <p>A wetter atmosphere can mean heavier rainfall and inland flooding risk.</p>
-    </div>
-    <div class="impact-card">
-      <div class="impact-icon">📍</div>
-      <h3>Landfall &amp; path</h3>
-      <p>Where and how slowly a storm moves shapes which communities are hit.</p>
-    </div>
-    <div class="impact-card">
-      <div class="impact-icon">🏘️</div>
-      <h3>Community exposure</h3>
-      <p>Population, infrastructure, and preparedness decide the human toll.</p>
+  <!-- BUT — sentence reveals -->
+  <div class="fuel-but fuel-reveal-block">
+    <div class="fuel-reveal-inner">
+      <div class="beat-tag fuel-tag-but">But</div>
+      <p class="fuel-beat" data-beat="1">Warm water and moisture can help a hurricane grow.</p>
+      <p class="fuel-beat" data-beat="2">But those ingredients are changing because the climate around them is&nbsp;changing.</p>
+      <p class="fuel-beat" data-beat="3">The storm is local. The warming behind it is <span class="fuel-em">global</span>.</p>
+      <p class="fuel-beat" data-beat="4">So before we ask where the next storm goes, we have to <span class="fuel-em-hot">follow the fuel</span>.</p>
     </div>
   </div>
-  <p class="therefore-line">
-    <span class="beat-tag inline">Therefore</span>
-    Hurricane risk is best understood as a <strong>combination</strong>: warming oceans and heavier moisture,
-    storm intensity, and community vulnerability all aligning at once.
-  </p>
-</section>
 
-<!-- ══════════════════════════════ TAKEAWAY ═════════════════════════════════ -->
-<section class="prose takeaway" id="takeaway">
-  <div class="kicker light">The takeaway</div>
-  <h2>The clearest pattern isn&rsquo;t stronger storms every year &mdash; it&rsquo;s a changing&nbsp;environment</h2>
-  <p>
-    Year to year, hurricanes are noisy and unpredictable. The steadier signal is in the conditions they form
-    in. The first chart showed an Atlantic that has warmed for over a century and may keep warming. The
-    satellite views showed what that warmth and moisture look like beneath a real storm. Put together, they
-    point to one idea: <strong>the environment hurricanes form in is shifting, and that can load storms with
-    more destructive potential</strong> &mdash; making hurricane risk a long-term climate issue, not a single
-    bad season.
-  </p>
-  <p style="margin-top:1.2rem;color:#c8e4f2;font-size:1.05rem;">
-    Scroll down to <strong style="color:#fff;">click locations across the map</strong> and see how ingredients combine
-    &mdash; an educational simulation, not a forecast.
-  </p>
+  <!-- Scene 1 — scroll-driven warm wipe: the storm's heat condenses into the global view -->
+  <div class="fuel-zoomout" id="fuel-zoomout" aria-hidden="true">
+    <div class="fuel-zoomout-sticky">
+      <div class="fuel-zoomout-wash"></div>
+      <p class="fuel-zoomout-line">Same heat. Bigger picture.</p>
+    </div>
+  </div>
+
+  <!-- The racing leaderboard (tall scroll, sticky stage) -->
+  <div class="fuel-race" id="fuel-race">
+    <div class="fuel-stage" id="fuel-stage">
+      <div class="fuel-head">
+        <div class="kicker">Interactive · the bigger picture</div>
+        <h2>Follow the Fuel</h2>
+        <p class="fuel-sub">If warm water fuels hurricanes, who has been filling the tank? Scroll to race through&nbsp;time.</p>
+      </div>
+      <div class="fuel-controls">
+        <div class="fuel-metric-toggle" role="group" aria-label="Choose emissions metric">
+          <button type="button" class="fuel-metric-btn is-active" data-metric="cumulative" aria-pressed="true">Cumulative</button>
+          <button type="button" class="fuel-metric-btn" data-metric="annual" aria-pressed="false">Annual</button>
+        </div>
+        <div class="fuel-year" id="fuel-year" aria-live="polite">1850</div>
+      </div>
+      <p class="fuel-annotation" id="fuel-annotation">Change the question, and the leaderboard&nbsp;changes.</p>
+      <div class="fuel-board-wrap">
+        <svg id="fuel-board" role="img" aria-label="Country CO2 emissions leaderboard over time"></svg>
+        <aside class="fuel-pin-panel" id="fuel-pin-panel" hidden>
+          <div class="fuel-pin-head">
+            <span id="fuel-pin-name">—</span>
+            <button type="button" id="fuel-pin-clear" aria-label="Unpin country">×</button>
+          </div>
+          <div class="fuel-pin-stat"><strong id="fuel-pin-share">—</strong> of all the CO<sub>2</sub> humanity has ever emitted</div>
+          <div class="fuel-share-gauge" aria-hidden="true"><span class="fuel-share-fill" id="fuel-pin-gauge"></span></div>
+          <p class="fuel-pin-cum" id="fuel-pin-cum"></p>
+          <p class="fuel-pin-link" id="fuel-pin-note"></p>
+        </aside>
+      </div>
+      <div class="fuel-timeline" id="fuel-timeline" aria-hidden="true"></div>
+      <p class="fuel-hint chart-source">Tap a bar to pin a country and see how its emissions tie back to hurricane fuel. Source: Our World in Data (Global Carbon Project).</p>
+    </div>
+  </div>
+
+  <!-- THEREFORE — sentence reveals -->
+  <div class="fuel-therefore fuel-reveal-block">
+    <div class="fuel-reveal-inner">
+      <div class="beat-tag fuel-tag-therefore">Therefore</div>
+      <p class="fuel-beat" data-beat="1">A hurricane lasts for days.</p>
+      <p class="fuel-beat" data-beat="2">The heat it draws from has been building for <span class="fuel-em">generations</span>.</p>
+      <p class="fuel-beat" data-beat="3">That is why hurricane risk is a climate story, not just a weather&nbsp;story.</p>
+      <p class="fuel-beat" data-beat="4">The path we choose now shapes the ocean future storms will&nbsp;cross.</p>
+    </div>
+  </div>
+
+  <!-- Final takeaway -->
+  <div class="fuel-takeaway">
+    <div class="fuel-takeaway-inner">
+      <div class="kicker light">The takeaway</div>
+      <p class="fuel-takeaway-lead">
+        A hurricane lasts a few days. The ocean it feeds on has been warming for
+        <em>generations</em> and warmer water means more moisture in the air,
+        faster intensification, and heavier rain and storm surge when a storm finally
+        reaches the&nbsp;coast.
+      </p>
+      <p class="fuel-takeaway-body">
+        Not every storm will be stronger. But each one now forms over an ocean we have
+        quietly reshaped, charged by emissions that are global and that linger for&nbsp;centuries.
+        The path we choose now decides how much more heat the ocean stores &mdash; and whether
+        future generations inherit an Atlantic that stays closer to the <strong>low-emissions</strong>
+        track, or keeps climbing toward the high one. Burn less, store less heat, and hurricanes
+        form over water with less extra fuel waiting for&nbsp;them.
+      </p>
+      <p class="fuel-takeaway-punch">A hurricane is weather.<br>The warming ocean beneath it is&nbsp;climate.</p>
+    </div>
+  </div>
+
 </section>
 
 <!-- ══════════════════════════════ MAKE A HURRICANE (DRAG MAP) ═══════════════ -->
@@ -396,6 +423,7 @@
   <ul>
     <li><strong>Atlantic sea surface temperature (long-term):</strong> Observed values from NOAA ERSST v5; future projections from CMIP6 GFDL-ESM4 under SSP1-2.6, SSP2-4.5, and SSP5-8.5. <em>(This series predates the satellite era and is shown as long-term context; it is a separate source from the GOES data below.)</em></li>
     <li><strong>Satellite imagery &amp; sea surface temperature (recent):</strong> NOAA GOES (Geostationary Operational Environmental Satellites), accessed via the NOAA Open Data on AWS registry.</li>
+    <li><strong>Country CO&#8322; emissions (&ldquo;Follow the Fuel&rdquo; leaderboard):</strong> Our World in Data (which compiles the Global Carbon Project and population data). Processed offline into a compact JSON of annual, cumulative, and per-capita emissions for real countries, 1850&ndash;present.</li>
   </ul>
 
   <h3>Methodology</h3>
@@ -414,6 +442,13 @@
     The &ldquo;Make a hurricane&rdquo; drag-map uses illustrative ingredient scores in
     <code>data/hurricane_zones.json</code> (not sampled forecasts); optional SST cells reuse the
     hurricane-season GOES grid above.
+    The &ldquo;Follow the Fuel&rdquo; leaderboard loads <code>data/emissions_country_year.json</code>,
+    built offline by <code>scripts/process_emissions.py</code> from the Our World in Data CO&#8322; dataset
+    (real countries only; cumulative and per-capita derived where needed). It shows three metrics on purpose:
+    <strong>annual</strong> emissions show current pressure, <strong>cumulative</strong> emissions show
+    historical contribution, and <strong>per-person</strong> emissions show intensity relative to population
+    &mdash; no single view is the whole story. Emissions are framed as contribution to the warming system, not
+    as a direct cause of any individual storm.
   </p>
 
   <h3>Limitations</h3>
@@ -425,6 +460,7 @@
     <li>This project focuses on long-term environmental patterns, not on predicting any individual storm.</li>
     <li>The &ldquo;Make a hurricane&rdquo; map uses <strong>illustrative zone scores (0&ndash;100)</strong> and a simplified educational model; it does not forecast storms, predict landfall, or calculate actual damage.</li>
     <li>The game moisture map is a <strong>schematic field</strong> derived from zone scores; sea surface temperature uses a processed GOES snapshot when available (Sep 2022).</li>
+    <li>The &ldquo;Follow the Fuel&rdquo; leaderboard shows country CO&#8322; <em>contribution</em> to the warming climate system; it does not claim any country caused a specific hurricane. Annual, cumulative, and per-capita metrics each tell a different and incomplete story.</li>
   </ul>
 
   <p class="footer-note">Built with D3.js · Data from NOAA. NOAA data is open to the public; this project is not endorsed by or affiliated with NOAA.</p>
@@ -432,35 +468,11 @@
 
 <div id="tooltip"></div>
 
-<script>
-(function () {
-  var el = document.getElementById('but-reveal');
-  if (!el) return;
-  var notEl = el.querySelector('.br-not');
-
-  function measure() {
-    // offsetWidth gives layout width (unaffected by scaleX transform)
-    el.style.setProperty('--not-w', (notEl ? notEl.offsetWidth : 0) + 'px');
-  }
-  measure();
-  // Re-measure after web fonts load in case fallback font gave a different width
-  if (document.fonts && document.fonts.ready) {
-    document.fonts.ready.then(measure);
-  }
-
-  var obs = new IntersectionObserver(function (entries) {
-    if (!entries[0].isIntersecting) return;
-    obs.disconnect();
-    setTimeout(function () { el.classList.add('phase-not'); }, 900);
-    setTimeout(function () { el.classList.add('phase-rest'); }, 1700);
-  }, { threshold: 0.55 });
-  obs.observe(el);
-})();
-</script>
-<script src="intro-story.js?v=9"></script>
-<script src="main.js?v=9"></script>
-<script src="viz2-sst.js?v=9"></script>
-<script src="viz3-explorer.js?v=9"></script>
-<script src="hurricane-game.js?v=9"></script>
+<script src="intro-story.js?v=12"></script>
+<script src="main.js?v=12"></script>
+<script src="viz2-sst.js?v=12"></script>
+<script src="viz3-explorer.js?v=12"></script>
+<script src="follow-the-fuel.js?v=12"></script>
+<script src="hurricane-game.js?v=12"></script>
 </body>
 </html>

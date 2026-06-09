@@ -9,19 +9,21 @@ https://kmalva.github.io/Hurricane-Final_Project/
 
 ## The story (and–but–therefore)
 - **And** — the Atlantic has warmed for over a century and may keep warming.
-- **But** — warmth and moisture aren't the whole story; damage depends on landfall, exposure, and preparedness.
-- **Therefore** — hurricane risk is a long-term climate issue: warming oceans + moisture + intensity + community vulnerability.
+- **But** — the storm ingredients are changing because the climate around them is changing; the storm is local but the warming behind it is global.
+- **Therefore** — to understand hurricane risk we follow the fuel back to the global emissions system heating the ocean that every storm feeds on.
 
 ## Visualizations
 1. **Atlantic SST scrollytelling** — annual sea surface temperature, 1900–2100, with projections revealed on scroll.
 2. **The fuel tank** — a GOES sea surface temperature heatmap of the tropical Atlantic with **hurricane season vs non-hurricane season** toggles (Sep 2022 vs Feb 2022 composites, shared color scale), MDR annotation, and seasonal callouts.
 3. **Ingredients of a storm (interactive centerpiece)** — Hurricane Ian (2022) as GOES saw it, with toggleable visible / infrared / sea-surface-temp / water-vapor layers, a hover read-out, and annotations.
-4. **Make a hurricane (drag-map game)** — after the takeaway, drag a storm across an Atlantic exploration map with educational zones, SST and moisture preview maps (with legends and storm-position dots), click-to-expand ingredient views, and transparent scoring. Uses `data/hurricane_zones.json` plus optional GOES SST backdrop. Not a forecast.
+4. **Follow the Fuel (emissions leaderboard)** — a scroll-driven racing leaderboard that pivots from one storm to the global emissions pattern warming the ocean. A warm scroll-driven wipe hands off from the storm; bars then reorder as you scroll through time; toggle **annual / cumulative** metrics to see the ranking change, and pin a country to see its share of all CO₂ ever emitted and how that ties back to hurricane fuel. Loads `data/emissions_country_year.json`.
+5. **Make a hurricane (drag-map game)** — drag a storm across an Atlantic exploration map with educational zones, SST and moisture preview maps (with legends and storm-position dots), click-to-expand ingredient views, and transparent scoring. Uses `data/hurricane_zones.json` plus optional GOES SST backdrop. Not a forecast.
 
 ## Data sources
 - **Long-term SST:** NOAA ERSST v5 (observed) and CMIP6 GFDL-ESM4 (SSP1-2.6 / SSP2-4.5 / SSP5-8.5 projections). *(Separate source from GOES; shown as long-term context.)*
 - **Satellite imagery & SST:** NOAA GOES-16 (`ABI-L2-SSTF`, `ABI-L2-MCMIPC`), accessed anonymously via the
   [NOAA Open Data on AWS registry](https://registry.opendata.aws/noaa-goes/).
+- **Country CO₂ emissions:** [Our World in Data CO₂ dataset](https://github.com/owid/co2-data) (compiles the Global Carbon Project + population). Real countries only, 1850–present.
 
 ## How the data was processed
 `process_goes.ipynb` pulls GOES-16 from S3 (anonymous), masks by data-quality flag, converts Kelvin to °C,
@@ -40,12 +42,15 @@ Other artifacts: `pip install xarray s3fs netCDF4 zarr h5netcdf h5py pyproj matp
 
 The **drag-map game** (`hurricane-game.js`) loads `data/hurricane_zones.json` for illustrative zone scores; optional GOES SST grid for the sea-surface temperature layer. Moisture is a schematic IDW field derived from zone scores.
 
+The **Follow the Fuel leaderboard** (`follow-the-fuel.js`) loads `data/emissions_country_year.json`, built offline by `scripts/process_emissions.py` from the Our World in Data CO₂ dataset. The script walks a contingency ladder (local raw CSV → download OWID → bundled `data/emissions_seed.csv` → inlined seed), derives cumulative/per-capita where missing, gracefully drops per-capita if population is unavailable, and runs known-truth sanity gates before writing. The committed JSON means the site works without re-running the script. To refresh: `pip install pandas`, then `python3 scripts/process_emissions.py`.
+
 ## Limitations
 - Hurricane damage depends on landfall, population exposure, infrastructure, preparedness, and reporting — not ocean temperature alone.
 - GOES water-vapor imagery shows atmospheric moisture, not measured precipitation.
 - Correlation between climate variables and hurricane activity does not, by itself, prove causation.
 - The project focuses on long-term environmental patterns, not on predicting individual storms.
 - The drag-map game uses illustrative zone scores and a schematic moisture field; it is not a hurricane forecast or damage model.
+- The Follow the Fuel leaderboard shows country CO₂ *contribution* to the warming system, not a direct cause of any individual storm; annual and cumulative metrics each tell a different, incomplete story.
 
 ## Run locally
 ```bash
