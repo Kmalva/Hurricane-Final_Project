@@ -182,7 +182,18 @@
     </p>
   </div>
 
-  <div class="explorer" id="explorer">
+  <div class="explorer-wrapper">
+<div class="explorer" id="explorer">
+
+    <!-- LEFT CONTEXT PANEL -->
+    <aside class="explorer-context-panel" id="explorer-context-panel">
+      <div class="panel-label">What you're looking at</div>
+      <div class="context-panel-body" id="context-panel-body">
+        <div class="context-default">
+          <p>Select a layer to learn how each ingredient contributes to a hurricane's power.</p>
+        </div>
+      </div>
+    </aside>
     <div class="explorer-stage" id="explorer-stage" role="img" aria-label="Interactive satellite view of a hurricane">
       <div id="explorer-fallback" class="viz-fallback" hidden></div>
     </div>
@@ -213,6 +224,7 @@
         </div>
       </div>
     </aside>
+  </div>
   </div>
 
   <div class="explorer-caption chart-source" id="explorer-source">Source: NOAA GOES. See methods.</div>
