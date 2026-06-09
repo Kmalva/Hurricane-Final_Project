@@ -651,13 +651,176 @@ svg#sst-map { display: block; width: 100%; height: auto; overflow: visible; bord
 .centerpiece .viz-fallback strong { color: #eaf6ff; }
 
 /* ─────────────────────────── VIZ 3: EXPLORER ─────────────────────── */
-.explorer {
+/* .explorer {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 300px;
   gap: 1.5rem;
   max-width: 1100px; margin: 0 auto;
   align-items: start;
+} */
+
+/* ── Viz 3: outer wrapper centers the whole explorer ── */
+.explorer-wrapper {
+  display: flex;
+  justify-content: center;
+  padding: 0 2vw;
 }
+
+/* ── Viz 3: three-column layout ── */
+.explorer {
+  display: grid;
+  grid-template-columns: 420px minmax(0, 1fr) 280px;
+  gap: 1.5rem;
+  max-width: 1560px;
+  width: 100%;
+  align-items: start;
+}
+
+/* ── Left context panel ── */
+.explorer-context-panel {
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 16px;
+  padding: 1.4rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  backdrop-filter: blur(4px);
+  position: sticky;
+  top: 2rem;
+}
+
+
+
+
+.explorer-context-panel .panel-label {
+  margin-bottom: 0.4rem;
+}
+
+.explorer-context-panel .context-panel-body {
+  font-size: 0.85rem;
+}
+
+.context-layer-icon {
+  font-size: 1.4rem;
+  margin-bottom: 0.35rem;
+}
+
+.context-layer-name {
+  font-size: 1rem;
+  margin-bottom: 0.25rem;
+}
+
+.context-layer-desc {
+  font-size: 0.83rem;
+  line-height: 1.55;
+}
+
+.context-all-item {
+  padding: 0.5rem 0.6rem;
+}
+
+.context-all-grid {
+  gap: 0.45rem;
+}
+
+
+
+
+
+
+
+
+
+.context-panel-body {
+  font-size: 0.92rem;
+  color: #cfe6f4;
+  line-height: 1.65;
+}
+
+.context-default p {
+  color: #8fb9cf;
+  font-style: italic;
+  font-size: 0.88rem;
+}
+
+.context-layer-icon {
+  font-size: 2rem;
+  display: block;
+  margin-bottom: 0.65rem;
+  opacity: 0.85;
+}
+
+.context-layer-name {
+  display: block;
+  font-size: 1.15rem;
+  font-weight: 700;
+  font-family: var(--serif);
+  color: #f4fbff;
+  margin-bottom: 0.5rem;
+  letter-spacing: -0.01em;
+}
+
+.context-layer-role {
+  display: block;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  margin-bottom: 0.85rem;
+  opacity: 0.7;
+}
+
+.context-layer-desc {
+  display: block;
+  font-size: 0.92rem;
+  color: #cfe6f4;
+  line-height: 1.7;
+}
+
+/* ── Responsive ── */
+@media (max-width: 1050px) {
+  .explorer {
+    grid-template-columns: minmax(0, 1fr) 280px;
+  }
+  .explorer-context-panel {
+    display: none;
+  }
+}
+@media (max-width: 880px) {
+  .explorer {
+    grid-template-columns: 1fr;
+  }
+}
+
+.context-all-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.6rem;
+}
+
+.context-all-item {
+  padding: 0.7rem;
+  border-radius: 8px;
+  background: rgba(255,255,255,0.03);
+  border-left: 3px solid;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
 .explorer-stage {
   position: relative;
   background: #02131c;
@@ -816,6 +979,30 @@ svg#sst-map { display: block; width: 100%; height: auto; overflow: visible; bord
 
 .explorer-caption { text-align: center; margin-top: 1.3rem; color: #8fb9cf; }
 .centerpiece .chart-source { color: #8fb9cf; }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 /* ─────────────────────────── COMMUNITY IMPACT ────────────────────── */
 .impact-grid {
