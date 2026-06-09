@@ -291,14 +291,21 @@
     <h2>Make a hurricane</h2>
     <p class="game-dek">Where would a hurricane thrive?</p>
     <p>
+<<<<<<< Updated upstream
       What makes a hurricane stronger or weaker? Drag the storm across the Atlantic and compare sea temperature,
       moisture, and wind conditions. The goal is not to predict a real storm, but to see how different
       <strong>storm ingredients</strong> can combine &mdash; or work against each other.
+=======
+      What makes a hurricane stronger or weaker? <strong>Drag the storm anywhere</strong> on the Atlantic map to see
+      how ingredients change across the ocean. Use the era buttons to compare <strong>1980, today, and 2080</strong>
+      under a high-emissions future &mdash; the same location produces different results as the ocean warms.
+>>>>>>> Stashed changes
     </p>
   </div>
 
   <div class="game-card chart-card" id="game-card">
     <div class="game-layout">
+<<<<<<< Updated upstream
       <div class="game-sidebar" id="game-sidebar">
         <p class="game-instructions">Drag the storm icon to the dashed circles. Use layer toggles to explore each ingredient. Optional challenges below.</p>
         <div class="panel-label">Map layers</div>
@@ -308,6 +315,51 @@
           <button type="button" class="season-btn game-layer-btn" data-layer="shear" aria-pressed="false">Wind shear</button>
           <button type="button" class="season-btn game-layer-btn" data-layer="exposure" aria-pressed="false">Exposure</button>
           <button type="button" class="season-btn game-layer-btn" data-layer="all" aria-pressed="false">All ingredients</button>
+=======
+
+      <!-- ── LEFT: map + thumbs ── -->
+      <div class="game-stack">
+        <div class="game-map-toolbar">
+          <button type="button" id="game-map-back" class="game-map-back" hidden>&#8592; Back to map</button>
+          <div class="game-era-toggle" id="game-era-toggle" role="group" aria-label="Select climate era">
+            <button type="button" class="era-btn" data-era="1980" aria-pressed="false">1980</button>
+            <button type="button" class="era-btn era-btn--active" data-era="now" aria-pressed="true">Today</button>
+            <button type="button" class="era-btn" data-era="2080" aria-pressed="false">2080 &middot; SSP5-8.5</button>
+          </div>
+        </div>
+        <div class="game-map-wrap" id="game-map-wrap">
+          <svg id="game-map" viewBox="0 0 900 520" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Educational Atlantic map — drag hurricane to explore storm ingredients"></svg>
+        </div>
+        <div class="game-thumb-strip" role="group" aria-label="Ingredient map previews">
+          <button type="button" class="game-thumb" data-layer="sst" aria-pressed="false" aria-label="View sea surface temperature on main map">
+            <div class="game-thumb-body">
+              <div class="game-thumb-map">
+                <span class="game-thumb-title">Sea surface temperature</span>
+                <svg id="game-thumb-sst" viewBox="0 0 900 520" preserveAspectRatio="xMidYMid meet" aria-hidden="true"></svg>
+              </div>
+              <div class="game-thumb-legend" id="game-thumb-legend-sst" aria-hidden="true"></div>
+            </div>
+          </button>
+          <button type="button" class="game-thumb" data-layer="moisture" aria-pressed="false" aria-label="View moisture on main map">
+            <div class="game-thumb-body">
+              <div class="game-thumb-map">
+                <span class="game-thumb-title">Moisture</span>
+                <svg id="game-thumb-moisture" viewBox="0 0 900 520" preserveAspectRatio="xMidYMid meet" aria-hidden="true"></svg>
+              </div>
+              <div class="game-thumb-legend" id="game-thumb-legend-moisture" aria-hidden="true"></div>
+            </div>
+          </button>
+        </div>
+        <p class="game-drag-hint chart-source">Drag the hurricane anywhere on the ocean &mdash; or click a <span class="game-hint-icon" aria-hidden="true">◎</span> circle to snap to a preset zone.</p>
+      </div>
+
+      <!-- ── RIGHT: always-visible scores panel ── -->
+      <aside class="game-side-panel" aria-label="Storm scores" aria-live="polite">
+        <div class="game-panel-header">
+          <span class="game-modal-kicker">At this location &middot; <span id="game-era-label" class="era-label-tag era-label-tag--now">Today</span></span>
+          <h3 id="game-location-type" class="game-modal-title">—</h3>
+          <p id="game-storm-response" class="game-modal-response">—</p>
+>>>>>>> Stashed changes
         </div>
         <p id="game-legend" class="game-legend" aria-live="polite"></p>
         <div class="game-challenges-wrap">
@@ -325,6 +377,7 @@
             <h3 id="game-popup-title" class="game-popup-title"></h3>
             <p id="game-popup-body" class="game-popup-body"></p>
           </div>
+<<<<<<< Updated upstream
         </div>
         <p class="game-drag-hint chart-source">Drag <span class="game-hint-icon" aria-hidden="true">◎</span> to circles on the map.</p>
       </div>
@@ -339,6 +392,14 @@
           <div class="game-score-row">
             <span id="game-growth-num" class="game-score-num">—</span>
             <span id="game-growth-label" class="game-growth-label">—</span>
+=======
+          <div class="game-score-block">
+            <div class="game-score-label">Community impact</div>
+            <div class="game-score-row">
+              <span id="game-impact-num" class="game-score-num">—</span>
+              <span id="game-impact-badge" class="risk-badge risk-badge--moderate">Moderate</span>
+            </div>
+>>>>>>> Stashed changes
           </div>
         </div>
 
@@ -359,6 +420,7 @@
         </div>
 
         <div class="game-risk-block">
+<<<<<<< Updated upstream
           <div class="panel-label">Why this happened</div>
           <p id="game-main-reason" class="game-main-reason">Drag the storm to a zone to explore ingredient alignment.</p>
           <p id="game-explanation" class="game-explanation"></p>
@@ -372,6 +434,14 @@
           may combine to affect growth environment and community impact potential.
         </div>
       </aside>
+=======
+          <div class="panel-label">Why this reading</div>
+          <p id="game-main-reason" class="game-main-reason">Drag the hurricane to explore ingredient alignment.</p>
+          <p id="game-explanation" class="game-explanation"></p>
+        </div>
+      </aside>
+
+>>>>>>> Stashed changes
     </div>
   </div>
 </section>
