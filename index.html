@@ -9,47 +9,41 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style.css?v=9">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/scrollama/3.2.0/scrollama.min.js"></script>
 </head>
 <body>
 
-<!-- ══════════════════════════════ HERO / HOOK ══════════════════════════════ -->
-<header id="hero">
-  <div class="hero-bg" aria-hidden="true"></div>
-  <div class="hero-inner">
-    <div class="eyebrow">Atlantic Ocean · Climate &amp; Hurricanes</div>
-    <h1>What happens when the ocean becomes a hurricane&rsquo;s fuel&nbsp;tank?</h1>
-    <p class="hero-lede">
-      Hurricanes don&rsquo;t draw their power from nowhere. They feed on warm ocean water and moist air.
-      As the Atlantic warms, the conditions that fuel destructive storms are quietly changing &mdash;
-      and that matters for every coastline in their path.
-    </p>
-    <div class="scroll-hint">
-      <svg width="13" height="13" viewBox="0 0 12 12" fill="none">
-        <path d="M6 2v8M3 7l3 3 3-3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
-      </svg>
-      Scroll to begin
-    </div>
-  </div>
-</header>
+<!-- ══════════════════════════════ STORY INTRO (CINEMATIC) ═══════════════════ -->
+<section id="story-intro" aria-label="Guided climate-to-hurricane introduction">
+  <div class="story-bg" aria-hidden="true"></div>
 
-<!-- ══════════════════════════════ INTRO: HURRICANES NEED FUEL ══════════════ -->
-<section class="prose" id="intro">
-  <div class="kicker">The recipe</div>
-  <h2>A hurricane is an engine, and warm water is its&nbsp;fuel</h2>
-  <p>
-    A hurricane is a heat engine. It lifts warm, moist air off the ocean surface; as that air rises and its
-    water vapor condenses, it releases energy that powers the storm&rsquo;s winds. The warmer the sea surface,
-    the more energy is available &mdash; which is why hurricanes form over warm tropical water and tend to
-    weaken once they move over land or cooler seas.
-  </p>
-  <p>
-    None of this means warm water alone <em>creates</em> a hurricane, or that every storm is getting stronger.
-    But warmer oceans and a moister atmosphere can create conditions that <strong>support stronger or wetter
-    storms</strong>. To see why that&rsquo;s worth paying attention to, start with the ocean itself.
-  </p>
+  <div class="story-stage" aria-live="polite">
+    <article class="story-screen story-screen-1 is-active" data-story-screen="1" aria-hidden="false">
+      <div class="story-inner">
+        <p class="story-beat" data-beat="1">We picture climate change as a <span class="story-heat">warming sky</span>.</p>
+        <p class="story-beat" data-beat="2">But <span class="story-ocean">the ocean</span> has quietly absorbed over 90% of that trapped heat.</p>
+        <p class="story-beat story-punchline story-punchline-ocean" data-beat="3">And stored heat <strong><span class="story-silent">does not stay silent</span></strong>.</p>
+      </div>
+      <div class="story-footer">
+        <div class="story-progress" aria-hidden="true">1 / 2</div>
+        <button type="button" id="story-next" class="story-next-btn" hidden>Next</button>
+      </div>
+    </article>
+
+    <article class="story-screen story-screen-2" data-story-screen="2" aria-hidden="true">
+      <div class="story-inner">
+        <p class="story-beat" data-beat="1">That buried heat is <span class="story-heat">fuel</span>.</p>
+        <p class="story-beat" data-beat="2">It feeds the warmth and moisture that hurricanes are built from.</p>
+        <p class="story-beat story-punchline story-punchline-thesis" data-beat="3">A warming Atlantic is quietly <span class="story-thesis">loading the dice</span>.</p>
+      </div>
+      <div class="story-footer">
+        <div class="story-progress" aria-hidden="true">2 / 2</div>
+        <button type="button" id="story-enter" class="story-enter-btn" hidden>Enter the visualization</button>
+      </div>
+    </article>
+  </div>
 </section>
 
 <!-- ══════════════════════════════ VIZ 1: SST SCROLLYTELLING ════════════════ -->
@@ -58,6 +52,7 @@
 
   <div id="sticky-graphic">
     <div id="chart-wrap">
+      <p class="story-transition">The Atlantic has already warmed. What happens next depends on future emissions.</p>
       <div id="chart-title">Atlantic Sea Surface Temperature, 1900&ndash;2100</div>
       <div id="chart-subtitle">Annual average &deg;C &middot; Observed (NOAA ERSST v5) and projected (CMIP6 GFDL-ESM4)</div>
       <svg id="main-chart"></svg>
@@ -89,7 +84,7 @@
       <div class="step-inner">
         <div class="step-label">1900 &ndash; 2025</div>
         <h3>Over a century of warming</h3>
-        <p>Atlantic sea surface temperatures have risen roughly 0.9&nbsp;&deg;C since 1900, with the fastest increases in recent decades.</p>
+        <p>The Atlantic has not warmed evenly every year, but the long-term direction is clear.</p>
       </div>
     </div>
 
@@ -97,7 +92,7 @@
       <div class="step-inner">
         <div class="step-label" style="color:var(--ssp126)">SSP1-2.6</div>
         <h3 style="color:var(--ssp126)">Low emissions</h3>
-        <p>If the world cuts emissions aggressively, Atlantic SSTs stabilise close to today&rsquo;s levels &mdash; roughly +0.4&nbsp;&deg;C more by 2100.</p>
+        <p>If emissions fall sharply, Atlantic warming slows compared with higher-emissions futures.</p>
       </div>
     </div>
 
@@ -105,7 +100,7 @@
       <div class="step-inner">
         <div class="step-label" style="color:var(--ssp245)">SSP2-4.5</div>
         <h3 style="color:var(--ssp245)">Moderate emissions</h3>
-        <p>A middle-of-the-road path. Temperatures keep rising but more slowly, reaching about +1.1&nbsp;&deg;C above today by 2100.</p>
+        <p>If emissions continue at a middle path, the ocean keeps storing more heat across this century.</p>
       </div>
     </div>
 
@@ -113,7 +108,7 @@
       <div class="step-inner">
         <div class="step-label" style="color:var(--ssp585)">SSP5-8.5</div>
         <h3 style="color:var(--ssp585)">High emissions</h3>
-        <p>If fossil fuel use accelerates, the Atlantic could be 2.5&nbsp;&deg;C warmer than today by 2100 &mdash; well above anything in the historical record.</p>
+        <p>With high emissions, the Atlantic becomes a much warmer source of storm energy by 2100.</p>
       </div>
     </div>
 
@@ -121,18 +116,21 @@
       <div class="step-inner">
         <div class="step-label">All scenarios</div>
         <h3>The gap is a choice</h3>
-        <p>Nearly 2&nbsp;&deg;C separates the best and worst cases by 2100. That difference is set by the emissions decisions made over the next few decades.</p>
+        <p>This does not mean every hurricane becomes stronger, but future storms can form over oceans with more available heat.</p>
       </div>
     </div>
 
   </div>
 </section>
 
-<!-- ══════════════════════════════ BEAT: AND ════════════════════════════════ -->
-<section class="beat beat-and">
-  <div class="beat-inner">
-    <div class="beat-tag">And</div>
-    <p>The Atlantic is warming &mdash; and warmer ocean water can hand a hurricane more energy to work&nbsp;with.</p>
+<!-- ══════════════════════════════ BEAT: AND (RED IRIS) ═════════════════════ -->
+<section id="heat-iris" aria-label="A warming ocean becomes hurricane fuel">
+  <div class="iris-stage">
+    <div class="iris-veil" aria-hidden="true"></div>
+    <div class="iris-content">
+      <div class="beat-tag">And</div>
+      <p>The ocean is soaking up that heat and a warmer Atlantic hands every hurricane that crosses it <span class="beat-hot">more fuel</span> to&nbsp;burn.</p>
+    </div>
   </div>
 </section>
 
@@ -279,7 +277,7 @@
     bad season.
   </p>
   <p style="margin-top:1.2rem;color:#c8e4f2;font-size:1.05rem;">
-    Scroll down to <strong style="color:#fff;">drag the storm across the map</strong> and see how ingredients combine
+    Scroll down to <strong style="color:#fff;">click locations across the map</strong> and see how ingredients combine
     &mdash; an educational simulation, not a forecast.
   </p>
 </section>
@@ -291,87 +289,88 @@
     <h2>Make a hurricane</h2>
     <p class="game-dek">Where would a hurricane thrive?</p>
     <p>
-      What makes a hurricane stronger or weaker? Drag the storm across the Atlantic and compare sea temperature,
-      moisture, and wind conditions. The goal is not to predict a real storm, but to see how different
-      <strong>storm ingredients</strong> can combine &mdash; or work against each other.
+      What makes a hurricane stronger or weaker? Click the dashed circles across the Atlantic and
+      tap the ingredient maps below to explore sea temperature and moisture. The goal is not to predict a real storm,
+      but to see how different <strong>storm ingredients</strong> can combine &mdash; or work against each other.
     </p>
+    <p class="game-keyboard-hint">Tip: Tab to a circle, then press Enter to explore that location.</p>
   </div>
 
   <div class="game-card chart-card" id="game-card">
-    <div class="game-layout">
-      <div class="game-sidebar" id="game-sidebar">
-        <p class="game-instructions">Drag the storm icon to the dashed circles. Use layer toggles to explore each ingredient. Optional challenges below.</p>
-        <div class="panel-label">Map layers</div>
-        <div class="game-layer-toggles" role="group" aria-label="Map ingredient layers">
-          <button type="button" class="season-btn game-layer-btn active" data-layer="sst" aria-pressed="true">Sea surface temperature</button>
-          <button type="button" class="season-btn game-layer-btn" data-layer="moisture" aria-pressed="false">Moisture</button>
-          <button type="button" class="season-btn game-layer-btn" data-layer="shear" aria-pressed="false">Wind shear</button>
-          <button type="button" class="season-btn game-layer-btn" data-layer="exposure" aria-pressed="false">Exposure</button>
-          <button type="button" class="season-btn game-layer-btn" data-layer="all" aria-pressed="false">All ingredients</button>
-        </div>
-        <p id="game-legend" class="game-legend" aria-live="polite"></p>
-        <div class="game-challenges-wrap">
-          <div class="panel-label">Guided challenges</div>
-          <div id="game-challenges" class="game-challenges" role="group" aria-label="Guided challenges"></div>
-        </div>
-        <p class="game-keyboard-hint">Tip: Tab to the map, then use arrow keys to nudge the storm.</p>
+    <div class="game-stack">
+      <div class="game-map-toolbar">
+        <button type="button" id="game-map-back" class="game-map-back" hidden>Back to exploration map</button>
       </div>
+      <div class="game-map-wrap" id="game-map-wrap">
+        <svg id="game-map" viewBox="0 0 900 520" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Educational Atlantic map — click locations to explore storm ingredients"></svg>
+      </div>
+      <div class="game-thumb-strip" role="group" aria-label="Ingredient map previews">
+        <button type="button" class="game-thumb" data-layer="sst" aria-pressed="false" aria-label="View sea surface temperature on main map">
+          <div class="game-thumb-body">
+            <div class="game-thumb-map">
+              <span class="game-thumb-title">Sea surface temperature</span>
+              <svg id="game-thumb-sst" viewBox="0 0 900 520" preserveAspectRatio="xMidYMid meet" aria-hidden="true"></svg>
+            </div>
+            <div class="game-thumb-legend" id="game-thumb-legend-sst" aria-hidden="true"></div>
+          </div>
+        </button>
+        <button type="button" class="game-thumb" data-layer="moisture" aria-pressed="false" aria-label="View moisture on main map">
+          <div class="game-thumb-body">
+            <div class="game-thumb-map">
+              <span class="game-thumb-title">Moisture</span>
+              <svg id="game-thumb-moisture" viewBox="0 0 900 520" preserveAspectRatio="xMidYMid meet" aria-hidden="true"></svg>
+            </div>
+            <div class="game-thumb-legend" id="game-thumb-legend-moisture" aria-hidden="true"></div>
+          </div>
+        </button>
+      </div>
+      <p class="game-drag-hint chart-source">Click a <span class="game-hint-icon" aria-hidden="true">◎</span> circle on the map to open its damage &amp; community-impact details. Tap a preview map to expand it.</p>
+    </div>
 
-      <div class="game-map-col">
-        <div class="game-map-wrap" id="game-map-wrap">
-          <svg id="game-map" viewBox="0 0 900 520" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Educational Atlantic map — drag the hurricane to explore storm ingredients"></svg>
-          <div id="game-popup" class="game-popup" hidden>
-            <button type="button" id="game-popup-close" class="game-popup-close" aria-label="Close">×</button>
-            <h3 id="game-popup-title" class="game-popup-title"></h3>
-            <p id="game-popup-body" class="game-popup-body"></p>
+    <div class="game-modal" id="game-modal" aria-hidden="true">
+      <div class="game-modal-backdrop" id="game-modal-backdrop"></div>
+      <div class="game-modal-card" role="dialog" aria-modal="true" aria-labelledby="game-location-type">
+        <button type="button" id="game-modal-close" class="game-modal-close" aria-label="Close details">×</button>
+        <div class="game-modal-header">
+          <span class="game-modal-kicker">At this location</span>
+          <h3 id="game-location-type" class="game-modal-title">—</h3>
+          <p id="game-storm-response" class="game-modal-response">—</p>
+        </div>
+
+        <div class="game-modal-scores">
+          <div class="game-score-block">
+            <div class="game-score-label">Storm growth</div>
+            <div class="game-score-row">
+              <span id="game-growth-num" class="game-score-num">—</span>
+              <span id="game-growth-label" class="game-growth-label">—</span>
+            </div>
+          </div>
+          <div class="game-score-block">
+            <div class="game-score-label">Community impact potential</div>
+            <div class="game-score-row">
+              <span id="game-impact-num" class="game-score-num">—</span>
+              <span id="game-impact-badge" class="risk-badge risk-badge--moderate">Moderate</span>
+            </div>
           </div>
         </div>
-        <p class="game-drag-hint chart-source">Drag <span class="game-hint-icon" aria-hidden="true">◎</span> to circles on the map.</p>
-      </div>
 
-      <aside class="game-panel" id="game-panel">
-        <div class="panel-label">At this location</div>
-        <p id="game-location-type" class="game-location-type">—</p>
-        <p id="game-storm-response" class="game-storm-response">—</p>
-
-        <div class="game-score-block">
-          <div class="game-score-label">Storm growth</div>
-          <div class="game-score-row">
-            <span id="game-growth-num" class="game-score-num">—</span>
-            <span id="game-growth-label" class="game-growth-label">—</span>
-          </div>
-        </div>
-
-        <div class="game-bars">
-          <div class="game-bar-row"><span>Warm water</span><div class="game-bar"><div id="game-bar-sst" class="game-bar-fill game-bar-fill--warm"></div></div></div>
-          <div class="game-bar-row"><span>Moisture</span><div class="game-bar"><div id="game-bar-moisture" class="game-bar-fill game-bar-fill--moist"></div></div></div>
-          <div class="game-bar-row"><span>Wind shear</span><div class="game-bar"><div id="game-bar-shear" class="game-bar-fill game-bar-fill--shear"></div></div></div>
-          <div class="game-bar-row"><span>Exposure</span><div class="game-bar"><div id="game-bar-exposure" class="game-bar-fill game-bar-fill--exp"></div></div></div>
-          <div class="game-bar-row"><span>Preparedness</span><div class="game-bar"><div id="game-bar-prep" class="game-bar-fill game-bar-fill--prep"></div></div></div>
-        </div>
-
-        <div class="game-score-block">
-          <div class="game-score-label">Community impact potential</div>
-          <div class="game-score-row">
-            <span id="game-impact-num" class="game-score-num">—</span>
-            <span id="game-impact-badge" class="risk-badge risk-badge--moderate">Moderate</span>
+        <div class="game-modal-bars">
+          <div class="panel-label">Ingredients</div>
+          <div class="game-bars">
+            <div class="game-bar-row"><span>Warm water</span><div class="game-bar"><div id="game-bar-sst" class="game-bar-fill game-bar-fill--warm"></div></div></div>
+            <div class="game-bar-row"><span>Moisture</span><div class="game-bar"><div id="game-bar-moisture" class="game-bar-fill game-bar-fill--moist"></div></div></div>
+            <div class="game-bar-row"><span>Wind shear</span><div class="game-bar"><div id="game-bar-shear" class="game-bar-fill game-bar-fill--shear"></div></div></div>
+            <div class="game-bar-row"><span>Exposure</span><div class="game-bar"><div id="game-bar-exposure" class="game-bar-fill game-bar-fill--exp"></div></div></div>
+            <div class="game-bar-row"><span>Preparedness</span><div class="game-bar"><div id="game-bar-prep" class="game-bar-fill game-bar-fill--prep"></div></div></div>
           </div>
         </div>
 
         <div class="game-risk-block">
           <div class="panel-label">Why this happened</div>
-          <p id="game-main-reason" class="game-main-reason">Drag the storm to a zone to explore ingredient alignment.</p>
+          <p id="game-main-reason" class="game-main-reason">Click a zone to explore ingredient alignment.</p>
           <p id="game-explanation" class="game-explanation"></p>
         </div>
-
-        <p id="game-challenge-feedback" class="game-feedback" aria-live="polite"></p>
-
-        <div class="game-caution" id="game-caution">
-          <strong>Educational simulation only.</strong>
-          This is not a real hurricane forecast. It is a simplified model showing how storm ingredients
-          may combine to affect growth environment and community impact potential.
-        </div>
-      </aside>
+      </div>
     </div>
   </div>
 </section>
@@ -424,8 +423,8 @@
     <li>A correlation between climate variables and hurricane activity does not, by itself, prove direct causation.</li>
     <li>GOES water-vapor imagery shows <em>atmospheric moisture</em>, not measured rainfall; it is not a precipitation total.</li>
     <li>This project focuses on long-term environmental patterns, not on predicting any individual storm.</li>
-    <li>The &ldquo;Make a hurricane&rdquo; drag-map uses <strong>illustrative zone scores (0&ndash;100)</strong> and a simplified educational model; it does not forecast storms, predict landfall, or calculate actual damage.</li>
-    <li>Moisture and wind shear map layers are <strong>schematic</strong>; only the optional SST layer uses a processed GOES snapshot (Sep 2022).</li>
+    <li>The &ldquo;Make a hurricane&rdquo; map uses <strong>illustrative zone scores (0&ndash;100)</strong> and a simplified educational model; it does not forecast storms, predict landfall, or calculate actual damage.</li>
+    <li>The game moisture map is a <strong>schematic field</strong> derived from zone scores; sea surface temperature uses a processed GOES snapshot when available (Sep 2022).</li>
   </ul>
 
   <p class="footer-note">Built with D3.js · Data from NOAA. NOAA data is open to the public; this project is not endorsed by or affiliated with NOAA.</p>
@@ -458,9 +457,10 @@
   obs.observe(el);
 })();
 </script>
-<script src="main.js"></script>
-<script src="viz2-sst.js"></script>
-<script src="viz3-explorer.js"></script>
-<script src="hurricane-game.js?v=2"></script>
+<script src="intro-story.js?v=9"></script>
+<script src="main.js?v=9"></script>
+<script src="viz2-sst.js?v=9"></script>
+<script src="viz3-explorer.js?v=9"></script>
+<script src="hurricane-game.js?v=9"></script>
 </body>
 </html>

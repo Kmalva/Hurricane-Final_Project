@@ -46,6 +46,12 @@
   let W, H, svg, xS, yS, lineGen, histPath, p126, p245, p585;
   let currentStep = -1;
 
+  // Scroll-driven transition helpers (shared by the red-iris handoff)
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+  const clamp01 = v => Math.max(0, Math.min(1, v));
+  const smooth = p => p * p * (3 - 2 * p);
+  const motionOK = () => !reduceMotion.matches && window.innerWidth > 880;
+
   const LAST_OBS_YEAR = 2014;   // CMIP6 historical run ends here
   const FIRST_PROJ    = 2015;   // SSP126/245 projections begin
   const PROJ_START = { '126': 2015, '245': 2015, '585': 2015 };
@@ -327,9 +333,47 @@
     window.addEventListener('resize', () => scroller.resize());
   }
 
+  // ── RED-IRIS HANDOFF (chart → AND) ──
+  // A red veil is revealed by a clip-path circle that grows from the center to
+  // fill the screen as you scroll; the AND message fades in over the red. Both
+  // are driven by the same scroll progress, so the effect reverses on scroll up.
+  function setupIris() {
+    const section = document.getElementById('heat-iris');
+    if (!section) return;
+    const veil = section.querySelector('.iris-veil');
+    const content = section.querySelector('.iris-content');
+    if (!veil || !content) return;
+    let raf = 0;
+
+    function render() {
+      raf = 0;
+      if (!motionOK()) {
+        veil.style.clipPath = 'circle(150% at 50% 50%)';
+        content.style.opacity = '1';
+        content.style.transform = 'none';
+        return;
+      }
+      const rect = section.getBoundingClientRect();
+      const travel = rect.height - window.innerHeight;
+      const p = travel > 0 ? clamp01(-rect.top / travel) : (rect.top <= 0 ? 1 : 0);
+      const wipe = smooth(clamp01(p / 0.5));          // circle fills over first half
+      const tP = smooth(clamp01((p - 0.45) / 0.35));  // message fades in over the red
+      veil.style.clipPath = 'circle(' + (wipe * 75).toFixed(2) + '% at 50% 50%)';
+      content.style.opacity = tP.toFixed(3);
+      content.style.transform = 'translateY(' + ((1 - tP) * 20).toFixed(1) + 'px)';
+    }
+
+    function onScroll() { if (!raf) raf = requestAnimationFrame(render); }
+
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', onScroll);
+    render();
+  }
+
   loadData().then(() => {
     build();
     setupScroll();
+    setupIris();
     window.addEventListener('resize', build);
   }).catch(err => console.warn('[viz1] data load failed:', err));
 
