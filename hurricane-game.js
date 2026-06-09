@@ -6,10 +6,17 @@
 
   const MAP_W = 900;
   const MAP_H = 520;
-<<<<<<< Updated upstream
-  const PAD = 40;
-  const LAYERS = ['sst', 'moisture', 'shear', 'exposure', 'all'];
+  const PAD = 20;
 
+  // Score offsets per era (0–100 game scale).
+  // Real °C deltas: 1980 ≈ −1.2°C, 2080 SSP5-8.5 ≈ +2.3°C vs. today.
+  const ERA_OFFSETS = {
+    '1980': { sst: -7, moisture: -4 },
+    'now':  { sst:  0, moisture:  0 },
+    '2080': { sst: 13, moisture:  7 },
+  };
+
+  let currentEra = 'now';
   let config = null;
   let zones = [];
   let fallbackZone = null;
@@ -23,9 +30,15 @@
   let thumbs = { sst: null, moisture: null };
   let sstGrid = null;
   let colorDomain = null;
-  let popupVisible = false;
-  let rafPending = false;
-  const color = d3.scaleSequential(d3.interpolateTurbo);
+  let cachedDefs = {};
+
+  const color = d3.scaleSequential(t => d3.interpolateYlOrRd(0.12 + t * 0.74));
+  const moistColor = d3.scaleLinear()
+    .domain([20, 45, 70])
+    .range(['#f3e6fb', '#c061c9', '#6a1b9a'])
+    .clamp(true);
+
+  // ── SCORING ──────────────────────────────────────────────────────────
 
   function impactCategory(score) {
     if (score <= 30) return { id: 'low', label: 'Low' };
@@ -76,7 +89,7 @@
     if (z.exposure > 70 && z.preparedness > 70) {
       return 'Preparedness may reduce harm even when coastal exposure is elevated.';
     }
-    return z.explanation || 'Ingredient alignment shapes the educational readout — not a real forecast.';
+    return 'Ingredient alignment shapes the educational readout — not a real forecast.';
   }
 
   // ── ZONE / INTERPOLATION ──────────────────────────────────────────────
@@ -91,17 +104,57 @@
     return fallbackZone || best || zones[0];
   }
 
-  function challengeMatches(zone, scores, ch) {
-    const m = ch.match;
-    if (!m) return false;
-    if (m.minStormGrowth != null && scores.stormGrowthScore < m.minStormGrowth) return false;
-    if (m.minImpact != null && scores.communityImpactPotential < m.minImpact) return false;
-    if (m.minSst != null && zone.sst < m.minSst) return false;
-    if (m.minWindShear != null && zone.windShear < m.minWindShear) return false;
-    if (m.minExposure != null && zone.exposure < m.minExposure) return false;
-    if (m.minPreparedness != null && zone.preparedness < m.minPreparedness) return false;
-    return true;
+  // IDW interpolation of all numeric ingredients at arbitrary pixel position.
+  function interpolateAllAt(x, y) {
+    const sources = zones.length ? zones : (fallbackZone ? [fallbackZone] : []);
+    if (!sources.length) return Object.assign({}, fallbackZone || {});
+    const fields = ['sst', 'moisture', 'windShear', 'exposure', 'preparedness'];
+    const sums = {};
+    fields.forEach(f => { sums[f] = 0; });
+    let den = 0;
+    sources.forEach(z => {
+      const d2 = (x - z.x) ** 2 + (y - z.y) ** 2 + 2500;
+      const w = 1 / d2;
+      fields.forEach(f => { sums[f] += w * (z[f] || 0); });
+      den += w;
+    });
+    const result = {};
+    fields.forEach(f => { result[f] = den > 0 ? Math.round(sums[f] / den) : 50; });
+    const nearest = findNearestZone(x, y);
+    result.id = 'pos_' + Math.round(x) + '_' + Math.round(y);
+    result.label = nearest.label;
+    result.locationType = nearest.locationType;
+    result.stormResponse = nearest.stormResponse;
+    result.explanation = nearest.explanation;
+    return result;
   }
+
+  // Apply era SST/moisture score offset, clamped to [0,100].
+  function applyEraOffset(zone) {
+    const off = ERA_OFFSETS[currentEra] || ERA_OFFSETS['now'];
+    return Object.assign({}, zone, {
+      sst:      Math.max(0, Math.min(100, zone.sst      + off.sst)),
+      moisture: Math.max(0, Math.min(100, zone.moisture + off.moisture)),
+    });
+  }
+
+  // ── MOISTURE FIELD ───────────────────────────────────────────────────
+
+  function sampleMoistureAt(x, y) {
+    const sources = zones.length ? zones : (fallbackZone ? [fallbackZone] : []);
+    if (!sources.length) return 50;
+    const off = ERA_OFFSETS[currentEra] || ERA_OFFSETS['now'];
+    let num = 0, den = 0;
+    sources.forEach(z => {
+      const d2 = (x - z.x) ** 2 + (y - z.y) ** 2 + 2500;
+      const w = 1 / d2;
+      num += w * Math.max(0, Math.min(100, z.moisture + off.moisture));
+      den += w;
+    });
+    return den > 0 ? num / den : 50;
+  }
+
+  // ── SPIRAL PATH ──────────────────────────────────────────────────────
 
   function spiralPath(tightness, stretch, rotDeg) {
     const pts = [];
@@ -114,31 +167,144 @@
     return d3.line().curve(d3.curveCatmullRom.alpha(0.6))(pts);
   }
 
-  function buildCoast(g) {
-    g.append('path')
-      .attr('class', 'game-coast')
-      .attr('fill', '#0f3d52')
-      .attr('stroke', '#7fd2f4')
-      .attr('stroke-width', 1.2)
-      .attr('opacity', 0.85)
-      .attr('d', [
-        'M 120,280 L 95,310 L 110,340 L 140,360 L 180,355 L 220,330 L 260,310 L 300,295',
-        'L 340,300 L 380,320 L 420,350 L 480,380 L 540,390 L 600,370 L 650,320',
-        'L 700,260 L 750,220 L 780,200 L 820,210 L 850,240 L 860,280 L 840,320',
-        'L 800,350 L 720,380 L 620,400 L 500,410 L 380,400 L 280,380 L 200,360 Z',
-        'M 200,360 L 180,320 L 160,290 L 140,270 Z',
-      ].join(' '));
-    g.append('rect')
-      .attr('x', 0).attr('y', 0).attr('width', MAP_W).attr('height', MAP_H)
-      .attr('fill', '#0c4a6e')
+  // ── MAP SETUP ────────────────────────────────────────────────────────
+
+  function createProjection() {
+    return d3.geoMercator()
+      .center([-50, 22])
+      .scale(560)
+      .translate([MAP_W / 2, 285]);
+  }
+
+  function syncZonePositions() {
+    if (!projection) return;
+    zones.forEach(z => {
+      if (z.lon == null || z.lat == null) return;
+      const p = projection([z.lon, z.lat]);
+      if (p) { z.x = p[0]; z.y = p[1]; }
+    });
+  }
+
+  function buildOcean(g) {
+    return g.append('rect')
+      .attr('class', 'game-ocean')
+      .attr('x', 0).attr('y', 0)
+      .attr('width', MAP_W).attr('height', MAP_H)
+      .attr('fill', '#4a9fd4')
       .lower();
   }
 
-  function renderSstLayer(g) {
-    const layer = g.append('g').attr('class', 'layer-sst game-layer').attr('opacity', 0);
-    if (!sstGrid) {
-      layer.append('rect').attr('width', MAP_W).attr('height', MAP_H)
-        .attr('fill', 'url(#game-sst-fallback)');
+  function buildLandLayer(g, opts) {
+    const opacity = opts.opacity != null ? opts.opacity : 1;
+    const stroke = opts.stroke !== false;
+    const landG = g.append('g').attr('class', 'game-land-layer').attr('opacity', opacity);
+    if (!landGeo || !geoPath) return landG;
+    landG.selectAll('path')
+      .data(landGeo.features)
+      .join('path')
+      .attr('class', 'game-land')
+      .attr('d', geoPath)
+      .attr('fill', '#74c365')
+      .attr('stroke', stroke ? '#2d6a3f' : 'none')
+      .attr('stroke-width', stroke ? 0.8 : 0);
+    return landG;
+  }
+
+  function appendDefs(svgSel, uid) {
+    const defs = svgSel.append('defs');
+    const gradId = `game-sst-fallback-${uid}`;
+    const grad = defs.append('linearGradient').attr('id', gradId)
+      .attr('x1', '0').attr('y1', '0').attr('x2', '1').attr('y2', '1');
+    grad.append('stop').attr('offset', '0%').attr('stop-color', '#fee391');
+    grad.append('stop').attr('offset', '50%').attr('stop-color', '#fe9929');
+    grad.append('stop').attr('offset', '100%').attr('stop-color', '#cc4c02');
+    const clipId = appendOceanClip(defs, uid);
+    cachedDefs[uid] = { defs, gradId, clipId };
+    return { defs, gradId, clipId };
+  }
+
+  function appendOceanClip(defs, uid) {
+    if (!landGeo || !geoPath) return null;
+    const clipId = `game-ocean-clip-${uid}`;
+    const clip = defs.append('clipPath')
+      .attr('id', clipId)
+      .attr('clipPathUnits', 'userSpaceOnUse');
+    const landD = geoPath(landGeo);
+    if (!landD) return null;
+    const d = `M0,0 H${MAP_W} V${MAP_H} H0 Z ${landD}`;
+    clip.append('path').attr('d', d)
+      .attr('fill-rule', 'evenodd').attr('clip-rule', 'evenodd');
+    return clipId;
+  }
+
+  function mapLonLatBounds() {
+    if (!projection || !projection.invert) {
+      return { lonMin: -100, lonMax: 22, latMin: -8, latMax: 55 };
+    }
+    const tl = projection.invert([0, 0]);
+    const br = projection.invert([MAP_W, MAP_H]);
+    return { lonMin: tl[0], lonMax: br[0], latMin: br[1], latMax: tl[1] };
+  }
+
+  // ── SST GRID ─────────────────────────────────────────────────────────
+
+  function filledSstValues() {
+    if (!sstGrid) return null;
+    if (sstGrid._filled) return sstGrid._filled;
+    const { nx, ny, values } = sstGrid;
+    const v = values.map(x => (x != null && Number.isFinite(x)) ? x : null);
+    let guard = 0;
+    while (guard < 250) {
+      guard++;
+      const next = v.slice();
+      let filledThis = 0;
+      for (let r = 0; r < ny; r++) {
+        for (let c = 0; c < nx; c++) {
+          const i = r * nx + c;
+          if (v[i] != null) continue;
+          let sum = 0, n = 0;
+          for (let dr = -1; dr <= 1; dr++) {
+            for (let dc = -1; dc <= 1; dc++) {
+              if (!dr && !dc) continue;
+              const rr = r + dr, cc = c + dc;
+              if (rr < 0 || rr >= ny || cc < 0 || cc >= nx) continue;
+              const val = v[rr * nx + cc];
+              if (val != null) { sum += val; n++; }
+            }
+          }
+          if (n > 0) { next[i] = sum / n; filledThis++; }
+        }
+      }
+      for (let i = 0; i < v.length; i++) v[i] = next[i];
+      if (filledThis === 0) break;
+    }
+    const fallback = sstGrid.vmin != null ? sstGrid.vmin : 26;
+    for (let i = 0; i < v.length; i++) if (v[i] == null) v[i] = fallback;
+    sstGrid._filled = v;
+    return v;
+  }
+
+  function sampleFilledSst(filled, lon, lat) {
+    const { nx, ny, lon0, lon1, lat0, lat1 } = sstGrid;
+    let c = Math.round((lon - lon0) / (lon1 - lon0) * (nx - 1));
+    let r = Math.round((lat - lat0) / (lat1 - lat0) * (ny - 1));
+    c = c < 0 ? 0 : (c > nx - 1 ? nx - 1 : c);
+    r = r < 0 ? 0 : (r > ny - 1 ? ny - 1 : r);
+    return filled[r * nx + c];
+  }
+
+  // ── LAYER RENDERERS ──────────────────────────────────────────────────
+
+  function renderSstLayer(g, gradId, clipId, initialOpacity) {
+    const layer = g.append('g')
+      .attr('class', 'layer-sst game-layer')
+      .attr('opacity', initialOpacity);
+    if (clipId) layer.attr('clip-path', `url(#${clipId})`);
+    if (!sstGrid || !projection || !clipId) {
+      if (clipId) {
+        layer.append('rect').attr('width', MAP_W).attr('height', MAP_H)
+          .attr('fill', `url(#${gradId})`);
+      }
       return layer;
     }
     const filled = filledSstValues();
@@ -206,48 +372,20 @@
     return layer;
   }
 
-  function renderExposureLayer(g) {
-    const layer = g.append('g').attr('class', 'layer-exposure game-layer').attr('opacity', 0);
-    const slots = [
-      [265, 292], [295, 288], [310, 305], [240, 318], [200, 328],
-      [350, 310], [380, 325],
-    ];
-    slots.forEach(([x, y], i) => {
-      layer.append('rect')
-        .attr('x', x).attr('y', y).attr('width', 8 + (i % 3) * 2).attr('height', 14 + (i % 2) * 6)
-        .attr('fill', '#fde047').attr('opacity', 0.55);
-    });
-    layer.append('text').attr('x', 280).attr('y', 278)
-      .attr('fill', '#fef08a').attr('font-size', 10).attr('font-family', 'Inter, Arial')
-      .text('Coastal exposure');
-    return layer;
+  // ── STORM VISUAL ─────────────────────────────────────────────────────
+
+  function appendStormDot(g) {
+    return g.append('circle')
+      .attr('class', 'storm-dot')
+      .attr('r', 11)
+      .attr('fill', '#111')
+      .attr('stroke', '#fff')
+      .attr('stroke-width', 3);
   }
 
   function renderZoneRings(g) {
     const rings = g.append('g').attr('class', 'game-zones');
     zones.forEach(z => {
-<<<<<<< Updated upstream
-      const ring = rings.append('g')
-        .attr('class', 'game-zone')
-        .attr('data-zone', z.id)
-        .attr('role', 'button')
-        .attr('tabindex', 0)
-        .attr('aria-label', `Explore ${z.label}`)
-        .style('cursor', 'pointer')
-        .on('click', () => snapToZone(z))
-        .on('keydown', (event) => {
-          if (event.key === 'Enter' || event.key === ' ') {
-            event.preventDefault();
-            snapToZone(z);
-          }
-        });
-      ring.append('circle')
-        .attr('class', 'game-zone-hit')
-        .attr('cx', z.x).attr('cy', z.y).attr('r', z.radius + 12)
-        .attr('fill', 'transparent')
-        .attr('pointer-events', 'all');
-      ring.append('circle')
-=======
       const ring = rings.append('g')
         .attr('class', 'game-zone')
         .attr('data-zone', z.id)
@@ -268,7 +406,6 @@
         .attr('fill', 'transparent')
         .attr('pointer-events', 'all');
       ring.append('circle')
->>>>>>> Stashed changes
         .attr('class', 'game-zone-ring')
         .attr('cx', z.x).attr('cy', z.y).attr('r', z.radius)
         .attr('fill', 'none')
@@ -306,26 +443,6 @@
     return storm;
   }
 
-  function syncThumbDots() {
-    ['sst', 'moisture'].forEach(key => {
-      const t = thumbs[key];
-      if (t && t.dot) {
-        t.dot.attr('cx', stormX).attr('cy', stormY);
-      }
-    });
-  }
-
-  function mapAriaLabel(zone, scores) {
-    const modeText = mainViewMode === 'explore'
-      ? 'Exploration map'
-      : mainViewMode === 'sst'
-        ? 'Sea surface temperature view'
-        : 'Moisture view';
-    return `${modeText} at ${zone.label}: ${scores.growthLabel}, community impact ${scores.impactCat.label}`;
-  }
-
-<<<<<<< Updated upstream
-=======
   // ── THUMBNAIL SYNC ───────────────────────────────────────────────────
 
   function syncThumbDots() {
@@ -343,7 +460,6 @@
     return `${modeText} at ${zone.label}: ${scores.growthLabel}, community impact ${scores.impactCat.label}`;
   }
 
->>>>>>> Stashed changes
   function updateStormVisual(zone, scores) {
     if (!stormG || !layers.stormBands) return;
     const t = d3.transition().duration(200).ease(d3.easeCubicOut);
@@ -416,34 +532,12 @@
     if (stage) stage.setAttribute('aria-label', mapAriaLabel(zone, scores));
   }
 
-  function updateChallengeFeedback(zone, scores) {
-    const fb = document.getElementById('game-challenge-feedback');
-    if (!fb || !activeChallengeId) {
-      if (fb) fb.textContent = '';
-      return;
-    }
-    modal.classList.add('is-open');
-    modal.setAttribute('aria-hidden', 'false');
-    modalOpen = true;
-    const close = document.getElementById('game-modal-close');
-    if (close) close.focus();
-  }
+  // ── SNAP TO ZONE ─────────────────────────────────────────────────────
 
-  function closeModal() {
-    const modal = document.getElementById('game-modal');
-    if (!modal) return;
-    modal.classList.remove('is-open');
-    modal.setAttribute('aria-hidden', 'true');
-    modalOpen = false;
-  }
-
-=======
->>>>>>> Stashed changes
   function snapToZone(z) {
     stormX = z.x;
     stormY = z.y;
     refreshAtPosition();
-    if (z.popupTitle) showPopup(z);
   }
 
   // ── REFRESH ──────────────────────────────────────────────────────────
@@ -461,24 +555,74 @@
     }
     updateStormVisual(zone, scores);
     updatePanel(zone, scores);
-    document.querySelectorAll('.game-zone-ring').forEach(ring => {
-      const id = ring.getAttribute('data-zone');
-      const on = zone.id === id;
+    syncThumbDots();
+
+    document.querySelectorAll('.game-zone').forEach(group => {
+      const id = group.getAttribute('data-zone');
+      const zd = zones.find(z => z.id === id);
+      const near = zd ? Math.hypot(stormX - zd.x, stormY - zd.y) < (zd.radius * 1.2) : false;
       const ring = group.querySelector('.game-zone-ring');
       if (!ring) return;
-      ring.classList.toggle('game-zone-ring--near', on);
-      ring.setAttribute('opacity', on ? '0.85' : '0.45');
+      ring.classList.toggle('game-zone-ring--near', near);
+      ring.setAttribute('opacity', near ? '0.85' : '0.45');
     });
   }
+
+  // ── ERA ──────────────────────────────────────────────────────────────
+
+  // CSS filter on the SST layer gives a warm/cool visual shift without re-rendering.
+  function applyEraVisualFilter() {
+    const filters = {
+      '1980': 'saturate(0.72) hue-rotate(20deg) brightness(0.94)',
+      'now':  '',
+      '2080': 'saturate(1.4) hue-rotate(-14deg) brightness(1.06)',
+    };
+    const f = filters[currentEra] || '';
+    if (layers.layerSst) layers.layerSst.style('filter', f || null);
+    if (thumbs.sst && thumbs.sst.layer) thumbs.sst.layer.style('filter', f || null);
+  }
+
+  function setEra(era) {
+    if (!ERA_OFFSETS[era]) return;
+    currentEra = era;
+    applyEraVisualFilter();
+
+    // Re-render moisture field since era offset changes the distribution.
+    const def = cachedDefs['main'];
+    if (layers.layerMoisture && def) {
+      const opacity = mainViewMode === 'moisture' ? 0.85 : 0;
+      layers.layerMoisture.remove();
+      layers.layerMoisture = renderMoistureField(mapG, def.clipId, opacity);
+      if (layers.landG) layers.landG.raise();
+      if (layers.zoneRings) layers.zoneRings.raise();
+      if (stormG) stormG.raise();
+      if (layers.dragOverlay) layers.dragOverlay.raise();
+    }
+
+    refreshAtPosition();
+  }
+
+  function setupEraToggles() {
+    document.querySelectorAll('.era-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const era = btn.dataset.era;
+        setEra(era);
+        document.querySelectorAll('.era-btn').forEach(b => {
+          const active = b.dataset.era === era;
+          b.classList.toggle('era-btn--active', active);
+          b.setAttribute('aria-pressed', active ? 'true' : 'false');
+        });
+      });
+    });
+  }
+
+  // ── VIEW TOGGLE ──────────────────────────────────────────────────────
 
   function setMainView(mode) {
     mainViewMode = mode;
     const t = d3.transition().duration(280);
-    const mainSstOp = mode === 'sst' ? 0.85 : 0;
-    const mainMoistOp = mode === 'moisture' ? 0.85 : 0;
-
-    if (layers.layerSst) layers.layerSst.transition(t).attr('opacity', mainSstOp);
-    if (layers.layerMoisture) layers.layerMoisture.transition(t).attr('opacity', mainMoistOp);
+    if (layers.layerSst) layers.layerSst.transition(t).attr('opacity', mode === 'sst' ? 0.85 : 0);
+    if (layers.layerMoisture) layers.layerMoisture.transition(t).attr('opacity', mode === 'moisture' ? 0.85 : 0);
     if (layers.landG) layers.landG.attr('opacity', 1);
 
     const back = document.getElementById('game-map-back');
@@ -490,12 +634,9 @@
       btn.classList.toggle('game-thumb--active', active);
       btn.setAttribute('aria-pressed', active ? 'true' : 'false');
     });
-
-    const zone = findNearestZone(stormX, stormY);
-    const scores = computeScores(zone);
-    const stage = document.getElementById('game-map');
-    if (stage) stage.setAttribute('aria-label', mapAriaLabel(zone, scores));
   }
+
+  // ── LEGEND ───────────────────────────────────────────────────────────
 
   function buildHorizontalLegend(containerId, opts) {
     const el = document.getElementById(containerId);
@@ -516,29 +657,23 @@
   function drawThumbLegends() {
     const vmin = colorDomain ? colorDomain.vmin : 20;
     const vmax = colorDomain ? colorDomain.vmax : 30;
-    const sstSteps = 24;
-    const sstGrad = d3.range(sstSteps)
-      .map(i => color(vmin + (i / (sstSteps - 1)) * (vmax - vmin)))
-      .join(', ');
+    const sstGrad = d3.range(24)
+      .map(i => color(vmin + (i / 23) * (vmax - vmin))).join(', ');
     buildHorizontalLegend('game-thumb-legend-sst', {
-      lowLabel: 'Cool',
-      lowValue: `${vmin.toFixed(0)}°C`,
-      highLabel: 'Warm',
-      highValue: `${vmax.toFixed(0)}°C`,
+      lowLabel: 'Cool', lowValue: `${vmin.toFixed(0)}°C`,
+      highLabel: 'Warm', highValue: `${vmax.toFixed(0)}°C`,
       gradient: `linear-gradient(to right, ${sstGrad})`,
     });
-    const moistSteps = 24;
-    const moistGrad = d3.range(moistSteps)
-      .map(i => moistColor(20 + (i / (moistSteps - 1)) * 50))
-      .join(', ');
+    const moistGrad = d3.range(24)
+      .map(i => moistColor(20 + (i / 23) * 50)).join(', ');
     buildHorizontalLegend('game-thumb-legend-moisture', {
-      lowLabel: 'Dry',
-      lowValue: '20%',
-      highLabel: 'Moist',
-      highValue: '70%',
+      lowLabel: 'Dry', lowValue: '20%',
+      highLabel: 'Moist', highValue: '70%',
       gradient: `linear-gradient(to right, ${moistGrad})`,
     });
   }
+
+  // ── THUMB MAPS ───────────────────────────────────────────────────────
 
   function initThumbMap(layerKey, svgId, uid) {
     const el = document.getElementById(svgId);
@@ -549,12 +684,9 @@
     const { gradId, clipId } = appendDefs(svgSel, uid);
     const g = svgSel.append('g').attr('class', 'game-thumb-inner-g');
     buildOcean(g);
-    let layerSel;
-    if (layerKey === 'sst') {
-      layerSel = renderSstLayer(g, gradId, clipId, 0.9);
-    } else {
-      layerSel = renderMoistureField(g, clipId, 0.9);
-    }
+    const layerSel = layerKey === 'sst'
+      ? renderSstLayer(g, gradId, clipId, 0.9)
+      : renderMoistureField(g, clipId, 0.9);
     buildLandLayer(g, { opacity: 1, stroke: true });
     const dot = appendStormDot(g);
     dot.attr('cx', stormX).attr('cy', stormY);
@@ -570,42 +702,56 @@
   function setupThumbInteraction() {
     document.querySelectorAll('.game-thumb').forEach(btn => {
       btn.addEventListener('click', () => {
-        activeChallengeId = btn.dataset.challenge;
-        list.querySelectorAll('.game-challenge-btn').forEach(b => {
-          b.classList.toggle('active', b.dataset.challenge === activeChallengeId);
-        });
-        refreshAtPosition();
+        const layer = btn.dataset.layer;
+        if (mainViewMode === layer) setMainView('explore');
+        else setMainView(layer);
       });
     });
     const back = document.getElementById('game-map-back');
     if (back) back.addEventListener('click', () => setMainView('explore'));
   }
 
-  function setupPopupClose() {
-    const close = document.getElementById('game-popup-close');
-    if (close) close.addEventListener('click', hidePopup);
+  // ── DRAG ─────────────────────────────────────────────────────────────
+
+  function setupDrag() {
+    // Transparent overlay on top captures all pointer/touch events for drag.
+    const overlay = mapG.append('rect')
+      .attr('class', 'game-drag-overlay')
+      .attr('width', MAP_W)
+      .attr('height', MAP_H)
+      .attr('fill', 'transparent')
+      .style('cursor', 'crosshair');
+
+    layers.dragOverlay = overlay;
+
+    const drag = d3.drag()
+      .on('start', function (event) {
+        overlay.style('cursor', 'grabbing');
+        stormX = Math.max(PAD, Math.min(MAP_W - PAD, event.x));
+        stormY = Math.max(PAD, Math.min(MAP_H - PAD, event.y));
+        refreshAtPosition();
+      })
+      .on('drag', function (event) {
+        stormX = Math.max(PAD, Math.min(MAP_W - PAD, event.x));
+        stormY = Math.max(PAD, Math.min(MAP_H - PAD, event.y));
+        refreshAtPosition();
+      })
+      .on('end', function () {
+        overlay.style('cursor', 'crosshair');
+      });
+
+    overlay.call(drag);
+  }
+
+  // ── KEYBOARD ESCAPE (layer view reset) ───────────────────────────────
+
+  function setupModalClose() {
     document.addEventListener('keydown', e => {
-      if (e.key === 'Escape') hidePopup();
+      if (e.key === 'Escape' && mainViewMode !== 'explore') setMainView('explore');
     });
   }
 
-  function setupKeyboard() {
-    const map = document.getElementById('game-map');
-    if (!map) return;
-    map.setAttribute('tabindex', '0');
-    map.addEventListener('keydown', e => {
-      const step = 12;
-      if (e.key === 'ArrowLeft') { stormX -= step; e.preventDefault(); }
-      if (e.key === 'ArrowRight') { stormX += step; e.preventDefault(); }
-      if (e.key === 'ArrowUp') { stormY -= step; e.preventDefault(); }
-      if (e.key === 'ArrowDown') { stormY += step; e.preventDefault(); }
-      if (['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(e.key)) {
-        stormX = Math.max(PAD, Math.min(MAP_W - PAD, stormX));
-        stormY = Math.max(PAD, Math.min(MAP_H - PAD, stormY));
-        refreshAtPosition();
-      }
-    });
-  }
+  // ── SST DATA ─────────────────────────────────────────────────────────
 
   async function loadSstGrid() {
     try {
@@ -625,7 +771,9 @@
     } catch (e) { sstGrid = null; }
   }
 
-  function initMap() {
+  // ── MAIN MAP INIT ────────────────────────────────────────────────────
+
+  function initMainMap() {
     const el = document.getElementById('game-map');
     if (!el) return;
 
@@ -635,19 +783,11 @@
 
     const { gradId, clipId } = appendDefs(svg, 'main');
     mapG = svg.append('g').attr('class', 'game-map-inner');
-    buildCoast(mapG);
-    layers.layerSst = renderSstLayer(mapG);
-    layers.layerMoisture = renderMoistureLayer(mapG);
-    layers.layerShear = renderShearLayer(mapG);
-    layers.layerExposure = renderExposureLayer(mapG);
-    renderZoneRings(mapG);
-=======
     buildOcean(mapG);
     layers.layerSst = renderSstLayer(mapG, gradId, clipId, 0);
     layers.layerMoisture = renderMoistureField(mapG, clipId, 0);
     layers.landG = buildLandLayer(mapG, { opacity: 1, stroke: true });
     layers.zoneRings = renderZoneRings(mapG);
->>>>>>> Stashed changes
     stormG = buildStorm(mapG);
 
     const start = zones.find(z => z.id === 'caribbean_heat') || zones[0];
@@ -687,11 +827,11 @@
       geoPath = d3.geoPath(projection);
       syncZonePositions();
       await loadSstGrid();
-      initMap();
-      setupLayerToggles();
-      setupChallenges();
-      setupPopupClose();
-      setupKeyboard();
+      initMainMap();
+      initThumbMaps();
+      setupThumbInteraction();
+      setupModalClose();
+      setupEraToggles();
     } catch (e) {
       console.error('Hurricane game init failed:', e);
       const hint = e && e.message ? e.message : 'unknown error';
