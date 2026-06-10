@@ -16,8 +16,8 @@
 
   if (!nextBtn || !enterBtn || !scrolly) return;
 
-  const BEAT_DELAY_MS = 2400;
-  const PUNCHLINE_PAUSE_MS = 1100;
+const BEAT_DELAY_MS = 1850;
+const PUNCHLINE_PAUSE_MS = 800;
 
   let timers = [];
 

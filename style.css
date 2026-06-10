@@ -811,16 +811,6 @@ svg#sst-map { display: block; width: 100%; height: auto; overflow: visible; bord
 
 
 
-
-
-
-
-
-
-
-
-
-
 .explorer-stage {
   position: relative;
   background: #02131c;
@@ -1658,4 +1648,46 @@ g.fuel-row.is-pinned .fuel-name { fill: #fff; }
   .fuel-beat { opacity: 1; transform: none; filter: none; }
   .fuel-pin-panel { position: static; width: 100%; margin-top: 1rem; }
   .fuel-controls { justify-content: flex-start; }
+}
+
+/* ── Viz 1: chart text darker + bigger ── */
+#main-chart text {
+  fill: var(--ink) !important;
+  font-size: 13px !important;
+}
+
+#main-chart .tick text {
+  fill: var(--ink-soft) !important;
+  font-size: 12px !important;
+}
+
+#main-chart .axis-label {
+  fill: var(--ink) !important;
+  font-size: 13px !important;
+  font-weight: 600;
+}
+
+#chart-title {
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+#chart-subtitle {
+  font-size: 13px;
+  color: var(--ink-soft);
+}
+
+#legend {
+  font-size: 13px;
+  color: var(--ink-soft);
+}
+
+.step-inner h3 {
+  font-size: 1.4rem;
+}
+
+.step-inner p {
+  font-size: 1rem;
+  color: var(--ink-soft);
 }
