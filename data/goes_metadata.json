@@ -1,5 +1,5 @@
 {
-  "generated": "2026-06-01 23:42 UTC",
+  "generated": "2026-06-10 03:37 UTC",
   "source": "NOAA GOES-16 (GOES-East), accessed via NOAA Open Data on AWS",
   "products": {
     "sst": "ABI-L2-SSTF",
@@ -19,17 +19,13 @@
   },
   "reprojection": "success",
   "artifacts": {
-    "sst_grid": "data/goes_sst_grid_hurricane.json",
-    "sst_layer": "assets/goes_sst_layer_hurricane.webp",
+    "sst_grid": "data/goes_sst_grid.json",
+    "sst_layer": "assets/goes_sst_layer.webp",
     "storm_visible": "assets/goes_storm_visible.webp",
     "storm_ir": "assets/goes_storm_ir.webp",
     "water_vapor": "assets/goes_water_vapor.webp",
     "storm_sst_layer": "assets/goes_storm_sst.webp",
-    "storm_sst_grid": "data/goes_storm_sst.json",
-    "sst_grid_hurricane": "data/goes_sst_grid_hurricane.json",
-    "sst_grid_offseason": "data/goes_sst_grid_offseason.json",
-    "sst_layer_hurricane": "assets/goes_sst_layer_hurricane.webp",
-    "sst_layer_offseason": "assets/goes_sst_layer_offseason.webp"
+    "storm_sst_grid": "data/goes_storm_sst.json"
   },
   "boxes": {
     "broad": {
@@ -69,27 +65,40 @@
     "vmax": 31.0
   },
   "sst_seasons": {
+    "color_domain": { "vmin": 19, "vmax": 31 },
     "hurricane": {
       "label": "Hurricane season",
-      "period": "Jun\u2013Nov (Atlantic)",
       "day": "2022-09-20",
       "grid": "data/goes_sst_grid_hurricane.json",
-      "layer": "assets/goes_sst_layer_hurricane.webp",
       "vmin": 25.28,
       "vmax": 30.9
     },
     "offseason": {
       "label": "Non-hurricane season",
-      "period": "Dec\u2013May (Atlantic)",
       "day": "2022-02-15",
       "grid": "data/goes_sst_grid_offseason.json",
-      "layer": "assets/goes_sst_layer_offseason.webp",
-      "vmin": 19.12,
-      "vmax": 28.33
+      "vmin": 19.0,
+      "vmax": 28.5
+    }
+  },
+  "era_grids": {
+    "1980": {
+      "label": "1980 (observed, NOAA ERSSTv5 offset −1.2°C)",
+      "grid": "data/sst_grid_1980.json",
+      "vmin": 22.9,
+      "vmax": 35.6
     },
-    "color_domain": {
-      "vmin": 19.12,
-      "vmax": 30.9
+    "now": {
+      "label": "Today (GOES-16, Sep 2022)",
+      "grid": "data/sst_grid_now.json",
+      "vmin": 24.1,
+      "vmax": 36.8
+    },
+    "2080": {
+      "label": "2080 · SSP5-8.5 (CMIP6 GFDL-ESM4, +2.27°C)",
+      "grid": "data/sst_grid_2080.json",
+      "vmin": 26.3,
+      "vmax": 39.0
     }
   }
 }

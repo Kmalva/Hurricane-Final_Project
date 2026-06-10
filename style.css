@@ -584,15 +584,32 @@ svg#main-chart { display: block; width: 100%; overflow: visible; }
   border-radius: 16px;
   padding: 1.6rem 1.6rem 1.3rem;
   box-shadow: 0 12px 40px rgba(12,31,42,0.08);
-  max-width: 1200px; margin: 0 auto;
+  max-width: 1500px; margin: 0 auto;
 }
-.chart-head { margin-bottom: 1.1rem; }
+.chart-head { margin-bottom: 2rem; }
 .chart-title { font-family: var(--serif); font-size: 1.2rem; font-weight: 600; }
 .chart-sub { font-size: 12.5px; color: var(--muted); margin-top: 0.15rem; }
 
 
 
 /* ── Viz 2: side by side season panels ── */
+
+#viz2 {
+  max-width: none;
+  padding: 10vh 3vw;
+}
+
+#viz2 .chart-card {
+  max-width: 1500px;
+  padding: 1.6rem 1rem 1.3rem;
+}
+
+#viz2 #sst-map-wrap {
+  margin-top: 1rem;
+}
+
+
+
 #sst-map-wrap {
   position: relative;
   display: grid;
@@ -685,6 +702,7 @@ svg#main-chart { display: block; width: 100%; overflow: visible; }
   margin-top: 0.55rem;
   line-height: 1.55;
   max-width: 52ch;
+  margin-bottom: 1.5rem;
 }
 .season-note strong { color: var(--ink); font-weight: 600; }
 

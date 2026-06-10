@@ -583,24 +583,52 @@
   }
 
   function setEra(era) {
-    if (!ERA_OFFSETS[era]) return;
-    currentEra = era;
-    applyEraVisualFilter();
+  if (!ERA_OFFSETS[era]) return;
+  currentEra = era;
 
-    // Re-render moisture field since era offset changes the distribution.
-    const def = cachedDefs['main'];
-    if (layers.layerMoisture && def) {
-      const opacity = mainViewMode === 'moisture' ? 0.85 : 0;
-      layers.layerMoisture.remove();
-      layers.layerMoisture = renderMoistureField(mapG, def.clipId, opacity);
-      if (layers.landG) layers.landG.raise();
-      if (layers.zoneRings) layers.zoneRings.raise();
-      if (stormG) stormG.raise();
-      if (layers.dragOverlay) layers.dragOverlay.raise();
-    }
-
-    refreshAtPosition();
+  // Swap to real SST grid for this era
+  if (ERA_SST_CACHE[era]) {
+    sstGrid = ERA_SST_CACHE[era];
+    sstGrid._filled = null; // clear fill cache so it recomputes
   }
+
+  // Re-render SST layer with new grid
+  const def = cachedDefs['main'];
+  if (layers.layerSst && def) {
+    const opacity = mainViewMode === 'sst' ? 0.85 : 0;
+    layers.layerSst.remove();
+    layers.layerSst = renderSstLayer(mapG, def.gradId, def.clipId, opacity);
+    if (layers.landG) layers.landG.raise();
+    if (layers.zoneRings) layers.zoneRings.raise();
+    if (stormG) stormG.raise();
+    if (layers.dragOverlay) layers.dragOverlay.raise();
+  }
+
+  // Re-render moisture field
+  if (layers.layerMoisture && def) {
+    const opacity = mainViewMode === 'moisture' ? 0.85 : 0;
+    layers.layerMoisture.remove();
+    layers.layerMoisture = renderMoistureField(mapG, def.clipId, opacity);
+    if (layers.landG) layers.landG.raise();
+    if (layers.zoneRings) layers.zoneRings.raise();
+    if (stormG) stormG.raise();
+    if (layers.dragOverlay) layers.dragOverlay.raise();
+  }
+
+  // Re-render SST thumbnail with new grid
+  if (thumbs.sst) {
+    thumbs.sst = initThumbMap('sst', 'game-thumb-sst', 'thumb-sst');
+    applyEraVisualFilter(); // no-op now but keeps the call in place
+  }
+
+  refreshAtPosition();
+}
+
+// No CSS filter — real grid data handles era differences
+function applyEraVisualFilter() {
+  if (layers.layerSst) layers.layerSst.style('filter', null);
+  if (thumbs.sst && thumbs.sst.layer) thumbs.sst.layer.style('filter', null);
+}
 
   function setupEraToggles() {
     document.querySelectorAll('.era-btn').forEach(btn => {
@@ -753,23 +781,59 @@
 
   // ── SST DATA ─────────────────────────────────────────────────────────
 
-  async function loadSstGrid() {
-    try {
-      const meta = await d3.json('data/goes_metadata.json');
-      const path = meta.sst_seasons?.hurricane?.grid
-        || meta.artifacts?.sst_grid_hurricane
-        || meta.artifacts?.sst_grid;
-      if (!path) return;
-      sstGrid = await d3.json(path);
-      const domain = meta.sst_seasons?.color_domain;
-      if (domain) {
-        colorDomain = domain;
-        color.domain([domain.vmin, domain.vmax]);
-      } else {
-        color.domain([sstGrid.vmin, sstGrid.vmax]);
+  // async function loadSstGrid() {
+  //   try {
+  //     const meta = await d3.json('data/goes_metadata.json');
+  //     const path = meta.sst_seasons?.hurricane?.grid
+  //       || meta.artifacts?.sst_grid_hurricane
+  //       || meta.artifacts?.sst_grid;
+  //     if (!path) return;
+  //     sstGrid = await d3.json(path);
+  //     const domain = meta.sst_seasons?.color_domain;
+  //     if (domain) {
+  //       colorDomain = domain;
+  //       color.domain([domain.vmin, domain.vmax]);
+  //     } else {
+  //       color.domain([sstGrid.vmin, sstGrid.vmax]);
+  //     }
+  //   } catch (e) { sstGrid = null; }
+  // }
+
+
+  // ── ERA SST GRID PATHS ───────────────────────────────────────────────
+const ERA_SST_PATHS = {
+  '1980': 'data/sst_grid_1980.json',
+  'now':  'data/sst_grid_now.json',
+  '2080': 'data/sst_grid_2080.json',
+};
+const ERA_SST_CACHE = {};
+
+// ── SST DATA ─────────────────────────────────────────────────────────
+async function loadSstGrid() {
+  try {
+    const meta = await d3.json('data/goes_metadata.json');
+    const domain = meta.sst_seasons?.color_domain;
+    if (domain) {
+      colorDomain = domain;
+      color.domain([domain.vmin, domain.vmax]);
+    }
+    // Load all three era grids upfront
+    for (const [era, path] of Object.entries(ERA_SST_PATHS)) {
+      try {
+        ERA_SST_CACHE[era] = await d3.json(path);
+      } catch (e) {
+        console.warn(`SST grid for ${era} not found:`, path);
       }
-    } catch (e) { sstGrid = null; }
+    }
+    // Set current grid to 'now'
+    sstGrid = ERA_SST_CACHE['now'] || null;
+    if (sstGrid && !colorDomain) {
+      color.domain([sstGrid.vmin, sstGrid.vmax]);
+    }
+  } catch (e) {
+    sstGrid = null;
   }
+}
 
   // ── MAIN MAP INIT ────────────────────────────────────────────────────
 

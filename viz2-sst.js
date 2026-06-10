@@ -124,7 +124,7 @@
     const lonSpan = ATL_LON1 - ATL_LON0;
     const latSpan = ATL_LAT0 - ATL_LAT1;
     const plotW = fullW - M.left - M.right;
-    const plotH = plotW * (latSpan / lonSpan);
+    const plotH = plotW * (latSpan / lonSpan) * 1.2;
     const fullH = plotH + M.top + M.bottom;
 
     const svg = d3.select(svgEl);
