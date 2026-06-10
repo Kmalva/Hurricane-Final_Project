@@ -66,10 +66,11 @@
     svgEl.innerHTML = '';
 
     svg = d3.select(svgEl).append('g').attr('transform', `translate(${M.left},${M.top})`);
-
+    
     const allY = [...DATA_HIST, ...DATA_126, ...DATA_245, ...DATA_585].map(d => d.sst);
+    const yMax585 = d3.max(DATA_585, d => d.sst);
     xS = d3.scaleLinear().domain([1900, 2100]).range([0, W]);
-    yS = d3.scaleLinear().domain([d3.min(allY) - 0.15, d3.max(allY) + 0.3]).range([H, 0]);
+    yS = d3.scaleLinear().domain([d3.min(allY) - 0.15, yMax585 + 0.1]).range([H, 0]);
     lineGen = d3.line().x(d => xS(d.year)).y(d => yS(d.sst)).curve(d3.curveCatmullRom.alpha(0.5));
 
     // Horizontal grid
