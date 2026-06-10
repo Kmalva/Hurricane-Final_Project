@@ -13,22 +13,22 @@
 
   // layer registry — ordered ocean→storm→atmosphere (narrative build-up)
   const LAYER_DEFS = [
-    { id: 'storm_sst_layer', key: 'storm_sst_layer', name: 'Sea surface temp', icon: '🌊',
+    { id: 'storm_sst_layer', key: 'storm_sst_layer', name: 'Sea surface temp',
       accent: '#ef4444', accentDim: 'rgba(239,68,68,0.15)',
       z: 1, op: 0.78, defaultOn: false, label: 'The fuel',
       shortDesc: 'Warm water is the energy source. Rapid evaporation loads the atmosphere with heat and moisture, which powers the storm like a heat engine.',
       desc: 'Sea surface temperature - is the energy source that makes a hurricane possible. Warm water (29–31°C in this case) evaporates rapidly, loading the atmosphere above with heat and moisture. As long as the storm sits over warm water, it draws energy upward like a heat engine. When the SST drops, from cooler water ahead or churning up cold water from beneath, the engine begins to starve. ' },
-    { id: 'storm_visible', key: 'storm_visible', name: 'Visible Light', icon: '🛰️',
+    { id: 'storm_visible', key: 'storm_visible', name: 'Visible Light',
       accent: '#e2e8f0', accentDim: 'rgba(226,232,240,0.12)',
       z: 2, op: 1.0, defaultOn: true, label: 'The storm',
       shortDesc: 'Sunlight reflecting off cloud tops reveals the storm\'s structure: spiral rainbands winding inward and the eyewall surrounding the calm eye.',
       desc: 'Visible light - is sunlight bouncing off the tops of clouds, which clearly shows the storm\'s shape. You can trace the spiral rainbands winding inward, and the eye wall surrounding the calm eye at the center. This specifically shows structure, not intensity.' },
-    { id: 'storm_ir', key: 'storm_ir', name: 'Infrared', icon: '🌡️',
+    { id: 'storm_ir', key: 'storm_ir', name: 'Infrared',
       accent: '#fb923c', accentDim: 'rgba(251,146,60,0.15)',
       z: 3, op: 1.0, defaultOn: false, label: 'Intensity',
       shortDesc: 'Cloud-top temperatures reveal intensity. The coldest, brightest ring around the eye marks the eyewall, where updrafts and winds are strongest.',
       desc: 'Infrared - measures heat radiating from cloud tops. Colder cloud tops which are higher in the atmosphere appear brighter. The ring of coldest, brightest cloud ringing the eye marks the eye wall, which is the most violent part of the storm, as updrafts are strongest and winds are highest. Meteorologists can use this band to estimate hurricane intensity even when aircraft reconnaissance (flights that measure conditions inside the storms) isn\'t available.' },
-    { id: 'water_vapor', key: 'water_vapor', name: 'Water vapor', icon: '💧',
+    { id: 'water_vapor', key: 'water_vapor', name: 'Water vapor',
       accent: '#38bdf8', accentDim: 'rgba(56,189,248,0.15)',
       z: 4, op: 0.82, defaultOn: false, label: 'Moisture',
       shortDesc: 'Moisture in the mid and upper atmosphere spiraling into the storm feeds the thunderstorm activity that drives intensification.',
@@ -44,7 +44,6 @@ function setContextPanel(layer) {
   const body = document.getElementById('context-panel-body');
   if (!body) return;
   body.innerHTML =
-    `<span class="context-layer-icon">${layer.icon}</span>` +
     `<span class="context-layer-name" style="color:${layer.accent}">${layer.name}</span>` +
     `<span class="context-layer-role" style="color:${layer.accent}">${layer.label}</span>` +
     `<span class="context-layer-desc">${layer.desc}</span>`;
@@ -62,7 +61,6 @@ function setContextPanelAll(layers) {
   if (!body) return;
   const items = layers.map(l =>
     `<div class="context-all-item" style="border-color:${l.accent}">` +
-      `<span class="context-layer-icon" style="font-size:1.1rem;margin-bottom:0.2rem">${l.icon}</span>` +
       `<span class="context-layer-name" style="color:${l.accent};font-size:0.88rem;margin-bottom:0.2rem">${l.name}</span>` +
       `<span class="context-layer-role" style="color:${l.accent}">${l.label}</span>` +
       `<span class="context-layer-desc" style="font-size:0.78rem;line-height:1.5">${l.shortDesc}</span>` +
@@ -170,7 +168,6 @@ function setContextPanelAll(layers) {
       btn.style.setProperty('--lb-accent', l.accent);
       btn.style.setProperty('--lb-accent-dim', l.accentDim);
       btn.innerHTML =
-        `<span class="lb-icon" aria-hidden="true">${l.icon}</span>` +
         `<span class="lb-text">` +
           `<span class="lb-name">${l.name}</span>` +
           `<span class="lb-sublabel">${l.label}</span>` +

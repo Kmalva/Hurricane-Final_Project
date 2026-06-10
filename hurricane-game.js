@@ -16,6 +16,16 @@
     '2080': { sst: 13, moisture:  7 },
   };
 
+  // Schematic moisture field: zone scores blended with era SST (not measured humidity).
+  const ERA_MOISTURE_SCALE = { '1980': 0.90, 'now': 1.0, '2080': 1.12 };
+  const MOISTURE_COLOR_DOMAIN = {
+    '1980': [18, 48],
+    'now':  [22, 58],
+    '2080': [30, 72],
+  };
+  const MOISTURE_RASTER_COLS = 120;
+  const MOISTURE_RASTER_ROWS = 70;
+
   let currentEra = 'now';
   let config = null;
   let zones = [];
@@ -31,12 +41,9 @@
   let sstGrid = null;
   let colorDomain = null;
   let cachedDefs = {};
+  let moistureRasterCache = {};
 
   const color = d3.scaleSequential(t => d3.interpolateYlOrRd(0.12 + t * 0.74));
-  const moistColor = d3.scaleLinear()
-    .domain([20, 45, 70])
-    .range(['#f3e6fb', '#c061c9', '#6a1b9a'])
-    .clamp(true);
 
   // ── SCORING ──────────────────────────────────────────────────────────
 
@@ -138,12 +145,21 @@
     });
   }
 
-  // ── MOISTURE FIELD ───────────────────────────────────────────────────
+  // ── MOISTURE FIELD (schematic: zone IDW + era SST blend) ─────────────
 
-  function sampleMoistureAt(x, y) {
+  function moistColorForEra() {
+    const [lo, hi] = MOISTURE_COLOR_DOMAIN[currentEra] || MOISTURE_COLOR_DOMAIN.now;
+    const mid = (lo + hi) / 2;
+    return d3.scaleLinear()
+      .domain([lo, mid, hi])
+      .range(['#f3e6fb', '#c061c9', '#6a1b9a'])
+      .clamp(true);
+  }
+
+  function sampleZoneMoistureAt(x, y) {
     const sources = zones.length ? zones : (fallbackZone ? [fallbackZone] : []);
     if (!sources.length) return 50;
-    const off = ERA_OFFSETS[currentEra] || ERA_OFFSETS['now'];
+    const off = ERA_OFFSETS[currentEra] || ERA_OFFSETS.now;
     let num = 0, den = 0;
     sources.forEach(z => {
       const d2 = (x - z.x) ** 2 + (y - z.y) ** 2 + 2500;
@@ -152,6 +168,123 @@
       den += w;
     });
     return den > 0 ? num / den : 50;
+  }
+
+  function scaleSstToMoisture(sstVal) {
+    if (sstVal == null || !Number.isFinite(sstVal)) return 45;
+    const vmin = sstGrid?.vmin ?? 22;
+    const vmax = sstGrid?.vmax ?? 32;
+    const t = (sstVal - vmin) / Math.max(vmax - vmin, 0.1);
+    return 20 + Math.max(0, Math.min(1, t)) * 50;
+  }
+
+  function sampleMoistureAtLonLat(lon, lat) {
+    const center = projection ? projection([lon, lat]) : null;
+    const zoneMoist = center ? sampleZoneMoistureAt(center[0], center[1]) : 50;
+    let sstMoist = 45;
+    const filled = filledSstValues();
+    if (filled && sstGrid) {
+      sstMoist = scaleSstToMoisture(sampleFilledSst(filled, lon, lat));
+    }
+    const blend = 0.45 * zoneMoist + 0.55 * sstMoist;
+    const scale = ERA_MOISTURE_SCALE[currentEra] ?? 1;
+    return Math.max(15, Math.min(75, blend * scale));
+  }
+
+  function smoothField2D(grid, cols, rows, passes) {
+    let v = grid.slice();
+    for (let p = 0; p < passes; p++) {
+      const next = v.slice();
+      for (let r = 0; r < rows; r++) {
+        for (let c = 0; c < cols; c++) {
+          let sum = 0, n = 0;
+          for (let dr = -1; dr <= 1; dr++) {
+            for (let dc = -1; dc <= 1; dc++) {
+              const rr = r + dr, cc = c + dc;
+              if (rr < 0 || rr >= rows || cc < 0 || cc >= cols) continue;
+              sum += v[rr * cols + cc];
+              n++;
+            }
+          }
+          next[r * cols + c] = sum / n;
+        }
+      }
+      v = next;
+    }
+    return v;
+  }
+
+  function buildMoistureRaster() {
+    if (moistureRasterCache[currentEra]) return moistureRasterCache[currentEra];
+    const { lonMin, lonMax, latMin, latMax } = mapLonLatBounds();
+    const cols = MOISTURE_RASTER_COLS;
+    const rows = MOISTURE_RASTER_ROWS;
+    const grid = new Float32Array(cols * rows);
+    for (let r = 0; r < rows; r++) {
+      const lat = latMax - (r + 0.5) / rows * (latMax - latMin);
+      for (let c = 0; c < cols; c++) {
+        const lon = lonMin + (c + 0.5) / cols * (lonMax - lonMin);
+        grid[r * cols + c] = sampleMoistureAtLonLat(lon, lat);
+      }
+    }
+    const raster = {
+      grid: smoothField2D(grid, cols, rows, 2),
+      cols, rows, lonMin, lonMax, latMin, latMax,
+    };
+    moistureRasterCache[currentEra] = raster;
+    return raster;
+  }
+
+  function sampleMoistureRaster(raster, lon, lat) {
+    const { grid, cols, rows, lonMin, lonMax, latMin, latMax } = raster;
+    const fx = (lon - lonMin) / (lonMax - lonMin) * cols - 0.5;
+    const fy = (latMax - lat) / (latMax - latMin) * rows - 0.5;
+    const c0 = Math.floor(fx), r0 = Math.floor(fy);
+    const tx = fx - c0, ty = fy - r0;
+    const at = (rr, cc) => {
+      if (rr < 0 || rr >= rows || cc < 0 || cc >= cols) return null;
+      return grid[rr * cols + cc];
+    };
+    const p00 = at(r0, c0), p10 = at(r0, c0 + 1), p01 = at(r0 + 1, c0), p11 = at(r0 + 1, c0 + 1);
+    let num = 0, den = 0;
+    if (p00 != null) { const w = (1 - tx) * (1 - ty); num += p00 * w; den += w; }
+    if (p10 != null) { const w = tx * (1 - ty); num += p10 * w; den += w; }
+    if (p01 != null) { const w = (1 - tx) * ty; num += p01 * w; den += w; }
+    if (p11 != null) { const w = tx * ty; num += p11 * w; den += w; }
+    if (den > 0) return num / den;
+    const vals = [p00, p10, p01, p11].filter(v => v != null);
+    return vals.length ? vals.reduce((s, v) => s + v, 0) / vals.length : 45;
+  }
+
+  function renderMoistureCanvas(raster) {
+    const mc = moistColorForEra();
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    const w = Math.max(1, Math.round(MAP_W * dpr));
+    const h = Math.max(1, Math.round(MAP_H * dpr));
+    const canvas = document.createElement('canvas');
+    canvas.width = w;
+    canvas.height = h;
+    const ctx = canvas.getContext('2d');
+    const img = ctx.createImageData(w, h);
+    for (let py = 0; py < h; py++) {
+      for (let px = 0; px < w; px++) {
+        const i = (py * w + px) * 4;
+        if (!projection?.invert) { img.data[i + 3] = 0; continue; }
+        const inv = projection.invert([(px / w) * MAP_W, (py / h) * MAP_H]);
+        if (!inv || inv[0] == null || !Number.isFinite(inv[0])) {
+          img.data[i + 3] = 0;
+          continue;
+        }
+        const v = sampleMoistureRaster(raster, inv[0], inv[1]);
+        const rgb = d3.color(mc(v));
+        img.data[i] = rgb.r;
+        img.data[i + 1] = rgb.g;
+        img.data[i + 2] = rgb.b;
+        img.data[i + 3] = 255;
+      }
+    }
+    ctx.putImageData(img, 0, 0);
+    return canvas;
   }
 
   // ── SPIRAL PATH ──────────────────────────────────────────────────────
@@ -342,33 +475,14 @@
       .attr('opacity', initialOpacity);
     if (clipId) layer.attr('clip-path', `url(#${clipId})`);
     if (!projection || !clipId) return layer;
-    const { lonMin, lonMax, latMin, latMax } = mapLonLatBounds();
-    const COLS = 40, ROWS = 24;
-    const fills = new Map();
-    for (let r = 0; r < ROWS; r++) {
-      const latT = latMax - (r / ROWS) * (latMax - latMin);
-      const latB = latMax - ((r + 1) / ROWS) * (latMax - latMin);
-      const latC = (latT + latB) / 2;
-      for (let c = 0; c < COLS; c++) {
-        const lonL = lonMin + (c / COLS) * (lonMax - lonMin);
-        const lonR = lonMin + ((c + 1) / COLS) * (lonMax - lonMin);
-        const lonC = (lonL + lonR) / 2;
-        const center = projection([lonC, latC]);
-        if (!center) continue;
-        const v = sampleMoistureAt(center[0], center[1]);
-        const tl = projection([lonL, latT]);
-        const tr = projection([lonR, latT]);
-        const br = projection([lonR, latB]);
-        const bl = projection([lonL, latB]);
-        if (!tl || !tr || !br || !bl) continue;
-        const fill = moistColor(v);
-        const seg = `M${tl[0]},${tl[1]}L${tr[0]},${tr[1]}L${br[0]},${br[1]}L${bl[0]},${bl[1]}Z`;
-        fills.set(fill, (fills.get(fill) || '') + seg);
-      }
-    }
-    fills.forEach((segs, fill) => {
-      layer.append('path').attr('d', segs).attr('fill', fill).attr('opacity', 0.8);
-    });
+    const raster = buildMoistureRaster();
+    const canvas = renderMoistureCanvas(raster);
+    layer.append('image')
+      .attr('href', canvas.toDataURL('image/png'))
+      .attr('x', 0).attr('y', 0)
+      .attr('width', MAP_W)
+      .attr('height', MAP_H)
+      .attr('preserveAspectRatio', 'none');
     return layer;
   }
 
@@ -585,6 +699,7 @@
   function setEra(era) {
   if (!ERA_OFFSETS[era]) return;
   currentEra = era;
+  moistureRasterCache = {};
 
   // Swap to real SST grid for this era
   if (ERA_SST_CACHE[era]) {
@@ -615,11 +730,15 @@
     if (layers.dragOverlay) layers.dragOverlay.raise();
   }
 
-  // Re-render SST thumbnail with new grid
+  // Re-render thumbnails with new era data
   if (thumbs.sst) {
     thumbs.sst = initThumbMap('sst', 'game-thumb-sst', 'thumb-sst');
     applyEraVisualFilter(); // no-op now but keeps the call in place
   }
+  if (thumbs.moisture) {
+    thumbs.moisture = initThumbMap('moisture', 'game-thumb-moisture', 'thumb-moist');
+  }
+  drawThumbLegends();
 
   refreshAtPosition();
 }
@@ -692,11 +811,13 @@ function applyEraVisualFilter() {
       highLabel: 'Warm', highValue: `${vmax.toFixed(0)}°C`,
       gradient: `linear-gradient(to right, ${sstGrad})`,
     });
+    const mc = moistColorForEra();
+    const [mLo, mHi] = MOISTURE_COLOR_DOMAIN[currentEra] || MOISTURE_COLOR_DOMAIN.now;
     const moistGrad = d3.range(24)
-      .map(i => moistColor(20 + (i / 23) * 50)).join(', ');
+      .map(i => mc(mLo + (i / 23) * (mHi - mLo))).join(', ');
     buildHorizontalLegend('game-thumb-legend-moisture', {
-      lowLabel: 'Dry', lowValue: '20%',
-      highLabel: 'Moist', highValue: '70%',
+      lowLabel: 'Dry', lowValue: `${mLo}%`,
+      highLabel: 'Moist', highValue: `${mHi}%`,
       gradient: `linear-gradient(to right, ${moistGrad})`,
     });
   }

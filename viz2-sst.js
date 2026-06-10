@@ -20,7 +20,7 @@
       mdrExtra: null,
     },
     offseason: {
-      fuel: { lon: -42, lat: 15, text: 'Most of the basin below ~26.5 °C — limited hurricane fuel' },
+      fuel: { lon: -72, lat: 13, text: 'Most of the basin below ~26.5 °C — limited fuel', anchor: 'middle' },
       mdrExtra: { lon: -58, lat: 21, text: 'Storms are rare Dec–May even here' },
     },
   };
@@ -30,10 +30,203 @@
     offseason: 'Non-hurricane season (Feb)',
   };
 
+  const QUALITY_LABELS = {
+    goes: 'GOES (clear sky)',
+    interpolated: 'interpolated from nearby GOES',
+    ersst: 'ERSST monthly (cloud gap fill)',
+  };
+
+  const CACHE_BUST = 'v=15';
+  const IDW_POWER = 2;
+  const IDW_MAX_DEG = 5;
+
   let META = null;
   let GRIDS = {};
+  let DISPLAY = {};
   let colorDomain = null;
   let landFeatures = null;
+
+  function bustUrl(path) {
+    if (!path) return path;
+    return path + (path.includes('?') ? '&' : '?') + CACHE_BUST;
+  }
+
+  function gridIndex(GRID, r, c) {
+    return r * GRID.nx + c;
+  }
+
+  function cellLonLat(GRID, r, c) {
+    const lonSpan = GRID.lon1 - GRID.lon0;
+    const latSpan = Math.abs(GRID.lat0 - GRID.lat1);
+    return {
+      lon: GRID.lon0 + (c + 0.5) / GRID.nx * lonSpan,
+      lat: GRID.lat0 - (r + 0.5) / GRID.ny * latSpan,
+    };
+  }
+
+  function isLandCell(GRID, idx) {
+    return GRID.quality?.[idx] === 'land';
+  }
+
+  function collectSamples(GRID) {
+    const samples = [];
+    for (let r = 0; r < GRID.ny; r++) {
+      for (let c = 0; c < GRID.nx; c++) {
+        const idx = gridIndex(GRID, r, c);
+        if (isLandCell(GRID, idx)) continue;
+        const v = GRID.values[idx];
+        if (v == null || !Number.isFinite(v)) continue;
+        const { lon, lat } = cellLonLat(GRID, r, c);
+        samples.push({ lon, lat, v, q: GRID.quality?.[idx] ?? 'goes' });
+      }
+    }
+    return samples;
+  }
+
+  function idwAt(lon, lat, samples) {
+    if (!samples.length) return null;
+    let num = 0, den = 0, nearest = null, nearD = Infinity;
+    for (const s of samples) {
+      const d = Math.hypot(s.lon - lon, s.lat - lat);
+      if (d < nearD) { nearD = d; nearest = s; }
+      if (d < 0.02) return { v: s.v, q: s.q, dist: d };
+      if (d > IDW_MAX_DEG) continue;
+      const w = 1 / Math.pow(d, IDW_POWER);
+      num += w * s.v;
+      den += w;
+    }
+    if (den > 0) return { v: num / den, q: 'interpolated', dist: 0 };
+    if (nearest && nearD <= IDW_MAX_DEG * 1.5) return { v: nearest.v, q: nearest.q, dist: nearD };
+    return null;
+  }
+
+  function buildDisplayGrid(GRID) {
+    const samples = collectSamples(GRID);
+    const n = GRID.nx * GRID.ny;
+    const values = new Float32Array(n);
+    values.fill(NaN);
+    const quality = new Array(n);
+    const land = new Uint8Array(n);
+
+    for (let r = 0; r < GRID.ny; r++) {
+      for (let c = 0; c < GRID.nx; c++) {
+        const idx = gridIndex(GRID, r, c);
+        if (isLandCell(GRID, idx)) {
+          land[idx] = 1;
+          quality[idx] = 'land';
+          continue;
+        }
+        const raw = GRID.values[idx];
+        if (raw != null && Number.isFinite(raw)) {
+          values[idx] = raw;
+          quality[idx] = GRID.quality?.[idx] ?? 'goes';
+        }
+      }
+    }
+
+    for (let r = 0; r < GRID.ny; r++) {
+      for (let c = 0; c < GRID.nx; c++) {
+        const idx = gridIndex(GRID, r, c);
+        if (land[idx] || Number.isFinite(values[idx])) continue;
+        const { lon, lat } = cellLonLat(GRID, r, c);
+        const est = idwAt(lon, lat, samples);
+        if (est) {
+          values[idx] = est.v;
+          quality[idx] = est.q;
+        }
+      }
+    }
+
+    return { values, quality, land, samples };
+  }
+
+  function sampleDisplay(DISPLAY_GRID, GRID, lon, lat) {
+    const lonSpan = GRID.lon1 - GRID.lon0;
+    const latSpan = Math.abs(GRID.lat0 - GRID.lat1);
+    const fx = (lon - GRID.lon0) / lonSpan * GRID.nx - 0.5;
+    const fy = (GRID.lat0 - lat) / latSpan * GRID.ny - 0.5;
+    const c0 = Math.floor(fx);
+    const r0 = Math.floor(fy);
+    const c1 = c0 + 1;
+    const r1 = r0 + 1;
+    const tx = fx - c0;
+    const ty = fy - r0;
+
+    function at(r, c) {
+      if (r < 0 || r >= GRID.ny || c < 0 || c >= GRID.nx) return null;
+      const idx = gridIndex(GRID, r, c);
+      if (DISPLAY_GRID.land[idx]) return null;
+      const v = DISPLAY_GRID.values[idx];
+      return Number.isFinite(v) ? { v, q: DISPLAY_GRID.quality[idx] } : null;
+    }
+
+    const p00 = at(r0, c0), p10 = at(r0, c1), p01 = at(r1, c0), p11 = at(r1, c1);
+    const pts = [p00, p10, p01, p11].filter(Boolean);
+    if (!pts.length) return idwAt(lon, lat, DISPLAY_GRID.samples);
+
+    let num = 0, den = 0;
+    if (p00) { const w = (1 - tx) * (1 - ty); num += p00.v * w; den += w; }
+    if (p10) { const w = tx * (1 - ty); num += p10.v * w; den += w; }
+    if (p01) { const w = (1 - tx) * ty; num += p01.v * w; den += w; }
+    if (p11) { const w = tx * ty; num += p11.v * w; den += w; }
+    const v = den ? num / den : pts.reduce((s, p) => s + p.v, 0) / pts.length;
+    const q = pts.some(p => p.q === 'goes') ? 'goes'
+      : pts.some(p => p.q === 'ersst') ? 'ersst' : 'interpolated';
+    return { v, q };
+  }
+
+  function renderHeatmapCanvas(DISPLAY_GRID, GRID, plotW, plotH) {
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    const w = Math.max(1, Math.round(plotW * dpr));
+    const h = Math.max(1, Math.round(plotH * dpr));
+    const canvas = document.createElement('canvas');
+    canvas.width = w;
+    canvas.height = h;
+    const ctx = canvas.getContext('2d');
+    const img = ctx.createImageData(w, h);
+    const lonSpan = ATL_LON1 - ATL_LON0;
+    const latSpan = ATL_LAT0 - ATL_LAT1;
+
+    const gridLonSpan = GRID.lon1 - GRID.lon0;
+    const gridLatSpan = Math.abs(GRID.lat0 - GRID.lat1);
+
+    for (let py = 0; py < h; py++) {
+      for (let px = 0; px < w; px++) {
+        const lon = ATL_LON0 + (px / w) * lonSpan;
+        const lat = ATL_LAT0 - (py / h) * latSpan;
+        const i = (py * w + px) * 4;
+        const gc = Math.min(GRID.nx - 1, Math.max(0, Math.floor((lon - GRID.lon0) / gridLonSpan * GRID.nx)));
+        const gr = Math.min(GRID.ny - 1, Math.max(0, Math.floor((GRID.lat0 - lat) / gridLatSpan * GRID.ny)));
+        if (DISPLAY_GRID.land[gr * GRID.nx + gc]) {
+          img.data[i + 3] = 0;
+          continue;
+        }
+        const hit = sampleDisplay(DISPLAY_GRID, GRID, lon, lat);
+        if (!hit || hit.v == null) {
+          img.data[i + 3] = 0;
+          continue;
+        }
+        const rgb = d3.color(color(hit.v));
+        img.data[i] = rgb.r;
+        img.data[i + 1] = rgb.g;
+        img.data[i + 2] = rgb.b;
+        img.data[i + 3] = hit.q === 'ersst' ? 235 : hit.q === 'interpolated' ? 245 : 255;
+      }
+    }
+    ctx.putImageData(img, 0, 0);
+    return canvas;
+  }
+
+  function updateMapSubtitle() {
+    const sub = document.getElementById('sst-map-sub');
+    if (!sub || !META?.sst_seasons) return;
+    const h = META.sst_seasons.hurricane;
+    const o = META.sst_seasons.offseason;
+    sub.textContent = `Sep 2022 vs Feb 2022 · multi-day GOES composite · shared scale ${colorDomain.vmin.toFixed(0)}–${colorDomain.vmax.toFixed(0)} °C`;
+    if (h?.day && o?.day) {
+      sub.textContent = `Multi-day clear-sky composite (${h.day.slice(0, 7)} vs ${o.day.slice(0, 7)}) · shared scale ${colorDomain.vmin.toFixed(0)}–${colorDomain.vmax.toFixed(0)} °C`;
+    }
+  }
 
   async function init() {
     try {
@@ -42,7 +235,7 @@
     } catch (e) { /* not fatal */ }
 
     try {
-      META = await d3.json('data/goes_metadata.json');
+      META = await d3.json(bustUrl('data/goes_metadata.json'));
     } catch (e) {
       return showFallback('Satellite SST map unavailable.');
     }
@@ -57,18 +250,22 @@
     color.domain([colorDomain.vmin, colorDomain.vmax]);
 
     try {
-      GRIDS.hurricane = await d3.json(seasons.hurricane.grid);
+      GRIDS.hurricane = await d3.json(bustUrl(seasons.hurricane.grid));
     } catch (e) {
       return showFallback('Hurricane-season SST grid unavailable.');
     }
 
     if (seasons.offseason?.grid) {
-      try { GRIDS.offseason = await d3.json(seasons.offseason.grid); } catch (e) { /* skip */ }
+      try { GRIDS.offseason = await d3.json(bustUrl(seasons.offseason.grid)); } catch (e) { /* skip */ }
     }
+
+    DISPLAY.hurricane = buildDisplayGrid(GRIDS.hurricane);
+    if (GRIDS.offseason) DISPLAY.offseason = buildDisplayGrid(GRIDS.offseason);
 
     const toggles = document.getElementById('sst-season-toggles');
     if (toggles) toggles.hidden = true;
 
+    updateMapSubtitle();
     buildStackedLayout();
     window.addEventListener('resize', buildStackedLayout);
   }
@@ -97,7 +294,7 @@
       svgEl.style.display = 'block';
       svgEl.style.width = '100%';
       svgEl.style.borderRadius = '8px';
-      svgEl.style.overflow = 'visible';
+      svgEl.style.overflow = 'hidden';
 
       container.appendChild(header);
       container.appendChild(svgEl);
@@ -112,7 +309,8 @@
 
   function drawPanel(seasonId, svgEl) {
     const GRID = GRIDS[seasonId];
-    if (!GRID) return;
+    const DISP = DISPLAY[seasonId];
+    if (!GRID || !DISP) return;
 
     const wrap = document.getElementById('sst-map-wrap');
     const M = { top: 10, right: 16, bottom: 34, left: 44 };
@@ -137,36 +335,17 @@
     const x = d3.scaleLinear().domain([ATL_LON0, ATL_LON1]).range([0, plotW]);
     const y = d3.scaleLinear().domain([ATL_LAT1, ATL_LAT0]).range([plotH, 0]);
 
-    // Ocean background
-    g.append('rect').attr('width', plotW).attr('height', plotH).attr('fill', '#ffffff');
+  // Ocean background
+    g.append('rect').attr('width', plotW).attr('height', plotH).attr('fill', '#e8f2f7');
 
-    // SST cells — filtered to Atlantic viewport
-    const north = GRID.lat0;
-    const south = GRID.lat1;
-    const fullLonSpan = GRID.lon1 - GRID.lon0;
-    const fullLatSpan = Math.abs(north - south);
-    const cw = plotW / GRID.nx * (fullLonSpan / lonSpan);
-    const ch = plotH / GRID.ny * (fullLatSpan / latSpan);
-
-    const cells = [];
-    for (let r = 0; r < GRID.ny; r++) {
-      for (let c = 0; c < GRID.nx; c++) {
-        const v = GRID.values[r * GRID.nx + c];
-        const cellLon = GRID.lon0 + (c + 0.5) / GRID.nx * fullLonSpan;
-        const cellLat = north - (r + 0.5) / GRID.ny * fullLatSpan;
-        if (cellLon < ATL_LON0 || cellLon > ATL_LON1) continue;
-        if (cellLat < ATL_LAT1 || cellLat > ATL_LAT0) continue;
-        cells.push({ v, cellLon, cellLat });
-      }
-    }
-
-    g.append('g').selectAll('rect').data(cells).join('rect')
-      .attr('x', d => x(d.cellLon) - cw / 2)
-      .attr('y', d => y(d.cellLat) - ch / 2)
-      .attr('width', cw + 0.5)
-      .attr('height', ch + 0.5)
-      .attr('fill', d => d.v == null ? '#ffffff' : color(d.v))
-      .attr('shape-rendering', 'crispEdges');
+    const heatCanvas = renderHeatmapCanvas(DISP, GRID, plotW, plotH);
+    const dataUrl = heatCanvas.toDataURL('image/png');
+    g.append('image')
+      .attr('href', dataUrl)
+      .attr('x', 0).attr('y', 0)
+      .attr('width', plotW)
+      .attr('height', plotH)
+      .attr('preserveAspectRatio', 'none');
 
     // ── Land polygons using same x/y scales as SST cells ──
     if (landFeatures) {
@@ -205,17 +384,18 @@
         const [mx, my] = d3.pointer(e);
         const lon = ATL_LON0 + (mx / plotW) * lonSpan;
         const lat = ATL_LAT0 - (my / plotH) * latSpan;
-        const c = Math.round((lon - GRID.lon0) / fullLonSpan * GRID.nx - 0.5);
-        const r = Math.round((north - lat) / fullLatSpan * GRID.ny - 0.5);
-        const v = (r >= 0 && r < GRID.ny && c >= 0 && c < GRID.nx)
-          ? GRID.values[r * GRID.nx + c] : null;
+        const hit = sampleDisplay(DISP, GRID, lon, lat);
         tip.style.opacity = '1';
         tip.style.left = (e.clientX + 16) + 'px';
         tip.style.top = (e.clientY - 10) + 'px';
-        tip.innerHTML = `<div style="font-weight:600;margin-bottom:4px;color:#0c1f2a">${fmtLat(lat)}, ${fmtLon(lon)}</div>` +
-          (v == null
-            ? `<div style="color:#6b8090">Land</div>`
-            : `<div style="display:flex;gap:10px;align-items:center"><span style="color:#6b8090">Sea surface</span><span style="margin-left:auto;font-weight:600">${v.toFixed(1)} °C</span></div>`);
+        let body;
+        if (!hit || hit.v == null) {
+          body = `<div style="color:#6b8090">Land</div>`;
+        } else {
+          const src = QUALITY_LABELS[hit.q] || 'interpolated';
+          body = `<div style="display:flex;gap:10px;align-items:center"><span style="color:#6b8090">Sea surface · ${src}</span><span style="margin-left:auto;font-weight:600">${hit.v.toFixed(1)} °C</span></div>`;
+        }
+        tip.innerHTML = `<div style="font-weight:600;margin-bottom:4px;color:#0c1f2a">${fmtLat(lat)}, ${fmtLon(lon)}</div>` + body;
       })
       .on('mouseleave', () => { tip.style.opacity = '0'; });
 
@@ -245,18 +425,21 @@
     if (META.sst?.day) sub.textContent = `GOES-16 ABI · clear-sky composite, ${META.sst.day} · °C`;
     const path = META.artifacts?.sst_grid;
     if (!path) return showFallback('Satellite SST map unavailable.');
-    d3.json(path).then(grid => {
+    d3.json(bustUrl(path)).then(grid => {
       GRIDS.hurricane = grid;
+      DISPLAY.hurricane = buildDisplayGrid(grid);
       color.domain([grid.vmin, grid.vmax]);
       colorDomain = { vmin: grid.vmin, vmax: grid.vmax };
+      updateMapSubtitle();
       buildStackedLayout();
       window.addEventListener('resize', buildStackedLayout);
     }).catch(() => showFallback('Satellite SST map unavailable.'));
   }
 
-  function annotText(g, x, y, lon, lat, text, fill) {
+  function annotText(g, x, y, lon, lat, text, fill, anchor) {
     g.append('text')
       .attr('x', x(lon)).attr('y', y(lat))
+      .attr('text-anchor', anchor || 'start')
       .attr('fill', fill || '#fff')
       .attr('font-family', 'Inter, Arial')
       .attr('font-size', 10.5)
@@ -280,11 +463,13 @@
       .attr('opacity', 0.9);
     annotText(g, x, y, MDR.lon0, MDR.lat1 - 0.4, 'Main development region', '#fff');
     const cfg = ANNOTATIONS[seasonId] || ANNOTATIONS.hurricane;
-    if (cfg.fuel) annotText(g, x, y, cfg.fuel.lon, cfg.fuel.lat, cfg.fuel.text, '#fff');
-    if (cfg.mdrExtra) annotText(g, x, y, cfg.mdrExtra.lon, cfg.mdrExtra.lat, cfg.mdrExtra.text, '#e0f2fe');
+    if (cfg.fuel) annotText(g, x, y, cfg.fuel.lon, cfg.fuel.lat, cfg.fuel.text, '#fff', cfg.fuel.anchor);
+    if (cfg.mdrExtra) annotText(g, x, y, cfg.mdrExtra.lon, cfg.mdrExtra.lat, cfg.mdrExtra.text, '#e0f2fe', cfg.mdrExtra.anchor);
   }
 
-  function mdrMean(grid) {
+  function mdrMean(seasonId) {
+    const grid = GRIDS[seasonId];
+    const disp = DISPLAY[seasonId];
     if (!grid) return null;
     const lonSpan = grid.lon1 - grid.lon0;
     const latSpan = Math.abs(grid.lat0 - grid.lat1);
@@ -295,7 +480,8 @@
         const lon = grid.lon0 + (c + 0.5) / grid.nx * lonSpan;
         const lat = north - (r + 0.5) / grid.ny * latSpan;
         if (lon < MDR.lon0 || lon > MDR.lon1 || lat < MDR.lat0 || lat > MDR.lat1) continue;
-        const v = grid.values[r * grid.nx + c];
+        const idx = r * grid.nx + c;
+        const v = disp?.values[idx] ?? grid.values[idx];
         if (v != null && Number.isFinite(v)) { sum += v; n++; }
       }
     }
@@ -307,8 +493,8 @@
     if (!el || !META?.sst_seasons) return;
     const h = META.sst_seasons.hurricane;
     const o = META.sst_seasons.offseason;
-    const mh = mdrMean(GRIDS.hurricane);
-    const mo = mdrMean(GRIDS.offseason);
+    const mh = mdrMean('hurricane');
+    const mo = mdrMean('offseason');
     if (mh == null || mo == null) { el.textContent = ''; return; }
     const delta = Math.abs(mh - mo);
     const hMonth = (h.day || '').slice(5, 7) === '09' ? 'Sep' : 'peak season';

@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=12">
+  <link rel="stylesheet" href="style.css?v=17">
   <script src="https://cdn.jsdelivr.net/npm/topojson-client@3/dist/topojson-client.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/scrollama/3.2.0/scrollama.min.js"></script>
@@ -37,7 +37,7 @@
       <div class="story-inner">
         <p class="story-beat" data-beat="1">That buried heat is <span class="story-heat">fuel</span>.</p>
         <p class="story-beat" data-beat="2">It feeds the warmth and moisture that hurricanes are built from.</p>
-        <p class="story-beat story-punchline story-punchline-thesis" data-beat="3">A warming Atlantic is quietly <span class="story-thesis">loading the dice</span>.</p>
+        <p class="story-beat story-punchline story-punchline-thesis" data-beat="3">A warming Atlantic is quietly <span class="story-thesis">charging up..</span>.</p>
       </div>
       <div class="story-footer">
         <div class="story-progress" aria-hidden="true">2 / 2</div>
@@ -145,8 +145,9 @@
       The long-term trend is one thing; the map of warmth in any given season is another. Using
       <strong>NOAA GOES satellite</strong> observations, we can look at sea surface temperature across the
       tropical Atlantic &mdash; the region where most major hurricanes are born. Use the buttons below the map to
-      compare <strong>hurricane season</strong> and <strong>non-hurricane season</strong> snapshots from the same
-      satellite. Warmer water (toward the deep reds) is the fuel; the dashed band marks the <em>main development
+      compare <strong>hurricane season</strong> and <strong>non-hurricane season</strong> composites from the same
+      satellite. Each map is a multi-day clear-sky median; hover any ocean cell to see whether that point came from
+      GOES, interpolation, or ERSST gap-fill. Warmer water (toward the deep reds) is the fuel; the dashed band marks the <em>main development
       region</em> where storms most often spin up.
     </p>
   </div>
@@ -154,7 +155,6 @@
   <figure class="chart-card" id="viz2-card">
     <figcaption class="chart-head">
       <div class="chart-title" id="sst-map-title">Atlantic sea surface temperature &mdash; GOES satellite</div>
-      <div class="chart-sub" id="sst-map-sub">Loading satellite data&hellip;</div>
       <div id="sst-season-toggles" class="season-toggles" role="group" aria-label="Compare hurricane and non-hurricane season sea surface temperature">
         <button type="button" class="season-btn active" data-season="hurricane" aria-pressed="true">Hurricane season</button>
         <button type="button" class="season-btn" data-season="offseason" aria-pressed="false">Non-hurricane season</button>
@@ -166,7 +166,7 @@
       <div id="sst-map-fallback" class="viz-fallback" hidden></div>
     </div>
     <div id="sst-legend" class="map-legend" aria-hidden="true"></div>
-    <div class="chart-source" id="sst-map-source">Source: NOAA GOES (ABI-L2-SSTF). See methods.</div>
+    <div class="chart-source" id="sst-map-source">Source: NOAA GOES (ABI-L2-SSTF) multi-day composite; ERSST v5 for persistent cloud gaps. See methods.</div>
   </figure>
 </section>
 
@@ -283,7 +283,7 @@
         </aside>
       </div>
       <div class="fuel-timeline" id="fuel-timeline" aria-hidden="true"></div>
-      <p class="fuel-hint chart-source">Tap a bar to pin a country and see how its emissions tie back to hurricane fuel. Source: Our World in Data (Global Carbon Project).</p>
+      <h2 class="fuel-hint chart-source">Tap a bar to pin a country and see how its emissions tie back to hurricane fuel.</h2>
     </div>
   </div>
 
@@ -410,25 +410,7 @@
           <p id="game-main-reason" class="game-main-reason">Drag the hurricane to explore ingredient alignment.</p>
           <p id="game-explanation" class="game-explanation"></p>
         </div>
-
-        <div class="game-caution" id="game-caution">
-          <strong>Educational simulation only.</strong>
-          This is not a real hurricane forecast — a simplified model showing how storm ingredients
-          may combine to affect growth environment and community impact potential.
-        </div>
       </aside>
-    </div>
-  </div>
-</section>
-
-<!-- ══════════════════════════════ DEMO VIDEO SLOT ══════════════════════════ -->
-<section class="prose" id="video">
-  <div class="kicker">Watch</div>
-  <h2>Project demo</h2>
-  <div class="video-frame" id="video-frame">
-    <div class="video-placeholder">
-      <span>Demo video coming soon</span>
-      <small>Replace this block with the embedded YouTube demo.</small>
     </div>
   </div>
 </section>
@@ -449,10 +431,12 @@
   <p id="methods-body">
     The long-term chart shows annual-average Atlantic sea surface temperature (observed, then projected). The
     satellite views come from <strong>NOAA GOES-16</strong>: the sea surface temperature map uses the
-    <code>ABI-L2-SSTF</code> product (quality-flagged, Kelvin converted to &deg;C, composited over clear-sky
-    days on <strong>2022-09-20</strong> and <strong>2022-02-15</strong> for seasonal comparison, reprojected to
-    latitude/longitude and downsampled with a shared color scale), and
-    the storm scene uses <code>ABI-L2-MCMIPC</code> visible, clean-infrared, and water-vapor bands for
+    <code>ABI-L2-SSTF</code> product (quality-flagged, Kelvin converted to &deg;C, median-composited across
+    <strong>10 sample days</strong> in Sep 2022 and Feb 2022 with six hourly snapshots per day, reprojected to
+    latitude/longitude and downsampled with a shared color scale). Small ocean gaps are filled by spatial
+    interpolation from nearby clear-sky GOES cells; persistent cloud gaps use <strong>NOAA ERSST v5</strong>
+    monthly means for the same month/year. Each grid cell records its source (GOES, interpolated, or ERSST);
+    hover the map to read it. The storm scene uses <code>ABI-L2-MCMIPC</code> visible, clean-infrared, and water-vapor bands for
     <strong>Hurricane Ian</strong> on 28 Sep 2022. All GOES data was processed offline in a notebook
     (<code>process_goes.ipynb</code>) into small JSON grids and WebP images, so this page loads quickly and does
     not depend on raw satellite files or any live data service. Because the sea surface is obscured by cloud
@@ -487,11 +471,11 @@
 
 <div id="tooltip"></div>
 
-<script src="intro-story.js?v=12"></script>
-<script src="main.js?v=12"></script>
-<script src="viz2-sst.js?v=12"></script>
-<script src="viz3-explorer.js?v=12"></script>
-<script src="follow-the-fuel.js?v=12"></script>
-<script src="hurricane-game.js?v=12"></script>
+<script src="intro-story.js?v=17"></script>
+<script src="main.js?v=15"></script>
+<script src="viz2-sst.js?v=15"></script>
+<script src="viz3-explorer.js?v=15"></script>
+<script src="follow-the-fuel.js?v=15"></script>
+<script src="hurricane-game.js?v=16"></script>
 </body>
 </html>

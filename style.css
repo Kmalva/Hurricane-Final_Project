@@ -143,9 +143,9 @@ body.story-locked {
   transform: translateY(18px);
   filter: blur(6px);
   transition:
-    opacity 1.2s ease,
-    transform 1.3s cubic-bezier(0.22, 1, 0.36, 1),
-    filter 1.2s ease;
+    opacity 0.8s ease,
+    transform 0.85s cubic-bezier(0.22, 1, 0.36, 1),
+    filter 0.8s ease;
 }
 .story-beat.is-visible {
   opacity: 1;
@@ -479,17 +479,21 @@ body.story-locked {
   overflow: visible;
 }
 .back-to-story-btn {
-  position: absolute; top: 1.25rem; right: 1.5rem; z-index: 4;
-  font-family: var(--sans); font-size: 0.82rem; font-weight: 600;
-  color: var(--ink); background: rgba(255,255,255,0.92);
-  border: 1px solid var(--line); border-radius: 999px;
-  padding: 0.45rem 0.95rem; cursor: pointer;
-  box-shadow: 0 4px 14px rgba(15,23,42,0.08);
+  position: absolute; top: 1.25rem; left: 50%; z-index: 4;
+  transform: translateX(-50%);
+  font-family: var(--sans); font-size: 0.88rem; font-weight: 700;
+  letter-spacing: 0.04em;
+  color: #062538;
+  background: linear-gradient(120deg, #d9f0fb 0%, #9fdff8 100%);
+  border: 1px solid rgba(159,223,248,0.9); border-radius: 999px;
+  padding: 0.55rem 1.15rem; cursor: pointer;
+  box-shadow: 0 8px 20px rgba(3,105,161,0.22);
   transition: background 0.2s, box-shadow 0.2s, transform 0.15s;
 }
 .back-to-story-btn:hover {
-  background: #fff; box-shadow: 0 6px 18px rgba(15,23,42,0.12);
-  transform: translateY(-1px);
+  background: linear-gradient(120deg, #e8f6fc 0%, #b8ecff 100%);
+  box-shadow: 0 10px 24px rgba(3,105,161,0.28);
+  transform: translateX(-50%) translateY(-1px);
 }
 .back-to-story-btn:focus-visible {
   outline: 2px solid var(--ocean); outline-offset: 2px;
@@ -648,7 +652,8 @@ svg#main-chart { display: block; width: 100%; overflow: visible; }
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 1.2rem;
-  align-items: start;  /* ← add this */
+  align-items: start;
+  overflow: hidden;
 }
 
 .sst-panel {
@@ -954,7 +959,7 @@ svg#main-chart { display: block; width: 100%; overflow: visible; }
 /* Individual layer toggle buttons */
 .layer-btn {
   display: grid;
-  grid-template-columns: 24px 1fr auto;
+  grid-template-columns: 1fr auto;
   align-items: center;
   gap: 8px;
   width: 100%; text-align: left;
@@ -977,13 +982,6 @@ svg#main-chart { display: block; width: 100%; overflow: visible; }
   box-shadow: 0 0 0 1px var(--lb-accent, #7fd2f4) inset;
   color: #fff;
 }
-
-/* Icon */
-.layer-btn .lb-icon {
-  font-size: 14px; line-height: 1; text-align: center;
-  opacity: 0.6; transition: opacity 0.15s;
-}
-.layer-btn.active .lb-icon { opacity: 1; }
 
 /* Name + sublabel stack */
 .layer-btn .lb-text { display: flex; flex-direction: column; gap: 1px; }
@@ -1017,8 +1015,11 @@ svg#main-chart { display: block; width: 100%; overflow: visible; }
   margin: 2px 0;
 }
 
-/* All layers button — 2x2 color grid icon, purple accent */
-.layer-btn--all { --lb-accent: #a78bfa; --lb-accent-dim: rgba(167,139,250,0.15); }
+/* All layers button — 2x2 color grid preview, purple accent */
+.layer-btn--all {
+  --lb-accent: #a78bfa; --lb-accent-dim: rgba(167,139,250,0.15);
+  grid-template-columns: 18px 1fr auto;
+}
 
 .lb-all-grid {
   display: grid;

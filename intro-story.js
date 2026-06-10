@@ -16,8 +16,8 @@
 
   if (!nextBtn || !enterBtn || !scrolly) return;
 
-const BEAT_DELAY_MS = 1850;
-const PUNCHLINE_PAUSE_MS = 800;
+const BEAT_DELAY_MS = 1250;
+const PUNCHLINE_PAUSE_MS = 450;
 
   let timers = [];
 
@@ -84,7 +84,7 @@ const PUNCHLINE_PAUSE_MS = 800;
 
     showActionButton(button);
 
-    let delay = 350;
+    let delay = 280;
     beats.forEach((beat, index) => {
       if (index > 0) {
         delay += BEAT_DELAY_MS;
@@ -110,7 +110,7 @@ const PUNCHLINE_PAUSE_MS = 800;
       activateScreen(screenTwo);
       intro.classList.remove('is-transitioning');
       revealScreen(screenTwo);
-    }, prefersReducedMotion ? 0 : 520);
+    }, prefersReducedMotion ? 0 : 380);
   }
 
   function exitIntro() {
