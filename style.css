@@ -584,11 +584,68 @@ svg#main-chart { display: block; width: 100%; overflow: visible; }
   border-radius: 16px;
   padding: 1.6rem 1.6rem 1.3rem;
   box-shadow: 0 12px 40px rgba(12,31,42,0.08);
-  max-width: 1000px; margin: 0 auto;
+  max-width: 1200px; margin: 0 auto;
 }
 .chart-head { margin-bottom: 1.1rem; }
 .chart-title { font-family: var(--serif); font-size: 1.2rem; font-weight: 600; }
 .chart-sub { font-size: 12.5px; color: var(--muted); margin-top: 0.15rem; }
+
+
+
+/* ── Viz 2: side by side season panels ── */
+#sst-map-wrap {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.2rem;
+}
+
+.sst-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.sst-panel-label {
+  font-family: var(--sans);
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ocean-deep);
+  padding: 0.3rem 0.5rem;
+  border-left: 3px solid var(--ocean);
+  background: rgba(14, 165, 233, 0.06);
+  border-radius: 0 5px 5px 0;
+}
+
+
+.sst-panel svg {
+  flex: 1;
+  height: 100%;
+  min-height: 0;
+}
+
+#sst-map-wrap {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.2rem;
+  align-items: start;  /* ← add this */
+}
+
+.sst-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  align-items: stretch;  /* ← add this */
+}
+
+@media (max-width: 680px) {
+  #sst-map-wrap {
+    grid-template-columns: 1fr;
+  }
+}
 
 .season-toggles {
   display: flex; flex-wrap: wrap; gap: 0.5rem;
@@ -631,8 +688,7 @@ svg#main-chart { display: block; width: 100%; overflow: visible; }
 }
 .season-note strong { color: var(--ink); font-weight: 600; }
 
-#sst-map-wrap { position: relative; width: 100%; }
-svg#sst-map { display: block; width: 100%; height: auto; overflow: visible; border-radius: 8px; }
+
 
 .map-legend { display: flex; align-items: center; gap: 0.6rem; margin-top: 1rem; font-size: 11.5px; color: var(--ink-soft); flex-wrap: wrap; }
 .map-legend .legend-bar { height: 12px; border-radius: 3px; flex: 1; min-width: 160px; max-width: 320px; }
