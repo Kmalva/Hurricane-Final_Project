@@ -620,10 +620,6 @@
     thumbs.sst = initThumbMap('sst', 'game-thumb-sst', 'thumb-sst');
     applyEraVisualFilter(); // no-op now but keeps the call in place
   }
-     
-  if (thumbs.moisture) {
-  thumbs.moisture = initThumbMap('moisture', 'game-thumb-moisture', 'thumb-moist');
-}
 
   refreshAtPosition();
 }
